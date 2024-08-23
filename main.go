@@ -154,17 +154,36 @@ func runStandalone(env *environment.EndhostEnvironment) error {
 		log.Println("Daemon running")
 	}()
 
-	tmpRouterFile := filepath.Join(env.TmpConfigPath, "br1-tmp.toml")
-	err = fileops.CopyFile(tmpRouterFile, filepath.Join(env.ConfigPath, "br-1.toml"))
-	if err != nil {
-		return err
-	}
-	err = fileops.ReplaceStringInFile(tmpRouterFile, "{configDir}", env.DaemonConfigPath+string(os.PathSeparator))
-	if err != nil {
-		return errors.New("Failed to configure folder in sciond.toml: " + err.Error())
+	for _, service := range scionConfig.BorderRouters {
+		wg.Add(1)
+		log.Println("Running router: ", service.Name)
+		go func(service conf.SCIONService) {
+			defer wg.Done()
+			err := runStandaloneRouter(*env, service)
+			if err != nil {
+				log.Println("Error running router: ", err)
+				environment.KillAllChilds()
+				log.Fatal(err)
+			}
+		}(service)
 	}
 
-	wg.Add(1)
+	for _, service := range scionConfig.ControlServices {
+		wg.Add(1)
+		log.Println("Running control: ", service.Name)
+		go func(service conf.SCIONService) {
+			defer wg.Done()
+			time.Sleep(3 * time.Second) // TODO: Check uptime
+			err := runStandaloneControlService(*env, service)
+			if err != nil {
+				log.Println("Error running control: ", err)
+				environment.KillAllChilds()
+				log.Fatal(err)
+			}
+		}(service)
+	}
+
+	/*wg.Add(1)
 	go func() {
 		// routerFile := filepath.Join("config", "br-1.toml")
 		defer wg.Done()
@@ -176,9 +195,9 @@ func runStandalone(env *environment.EndhostEnvironment) error {
 			log.Fatal(err)
 		}
 		log.Println("Router running")
-	}()
+	}()*/
 
-	tmpControlFile := filepath.Join(env.TmpConfigPath, "cs1-tmp.toml")
+	/*tmpControlFile := filepath.Join(env.TmpConfigPath, "cs1-tmp.toml")
 	err = fileops.CopyFile(tmpControlFile, filepath.Join(env.ConfigPath, "cs-1.toml"))
 	if err != nil {
 		return err
@@ -206,7 +225,7 @@ func runStandalone(env *environment.EndhostEnvironment) error {
 			log.Fatal(err)
 		}
 		log.Println("Control running")
-	}()
+	}()*/
 
 	tmpDispatcherFile := filepath.Join(env.TmpConfigPath, "dispatcher-tmp.toml")
 	err = fileops.CopyFile(tmpDispatcherFile, filepath.Join(env.ConfigPath, "dispatcher.toml"))

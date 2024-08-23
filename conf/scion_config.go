@@ -12,6 +12,7 @@ type SCIONService struct {
 	Name       string
 	ConfigFile string
 	Type       string
+	Index      int
 }
 
 type SCIONConfig struct {
@@ -45,6 +46,7 @@ func LoadSCIONConfig() (*SCIONConfig, error) {
 			Name:       fmt.Sprintf("control-%d", index+1),
 			ConfigFile: controlConfigFile,
 			Type:       "control",
+			Index:      index + 1,
 		}
 		c.ControlServices = append(c.ControlServices, service)
 	}
@@ -60,6 +62,7 @@ func LoadSCIONConfig() (*SCIONConfig, error) {
 			Name:       fmt.Sprintf("router-%d", index+1),
 			ConfigFile: routerConfigFile,
 			Type:       "router",
+			Index:      index + 1,
 		}
 		c.BorderRouters = append(c.BorderRouters, service)
 	}
