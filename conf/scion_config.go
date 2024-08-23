@@ -43,7 +43,7 @@ func LoadSCIONConfig() (*SCIONConfig, error) {
 
 	for index, controlConfigFile := range controlConfigFiles {
 		service := SCIONService{
-			Name:       fmt.Sprintf("control-%d", index+1),
+			Name:       fmt.Sprintf("scion-control-service-cs%d", index+1),
 			ConfigFile: controlConfigFile,
 			Type:       "control",
 			Index:      index + 1,
@@ -59,7 +59,7 @@ func LoadSCIONConfig() (*SCIONConfig, error) {
 
 	for index, routerConfigFile := range routerConfigFiles {
 		service := SCIONService{
-			Name:       fmt.Sprintf("router-%d", index+1),
+			Name:       fmt.Sprintf("scion-border-router-br%d", index+1),
 			ConfigFile: routerConfigFile,
 			Type:       "router",
 			Index:      index + 1,
@@ -69,7 +69,7 @@ func LoadSCIONConfig() (*SCIONConfig, error) {
 
 	if fileops.FileOrFolderExists(filepath.Join(c.Folder, "dispatcher.toml")) {
 		c.Dispatcher = &SCIONService{
-			Name:       "Dispatcher",
+			Name:       "scion-dispatcher",
 			ConfigFile: filepath.Join(c.Folder, "dispatcher.toml"),
 			Type:       "dispatcher",
 		}
@@ -77,7 +77,7 @@ func LoadSCIONConfig() (*SCIONConfig, error) {
 
 	if fileops.FileOrFolderExists(filepath.Join(c.Folder, "sciond.toml")) {
 		c.Daemon = SCIONService{
-			Name:       "Daemon",
+			Name:       "scion-daemon",
 			ConfigFile: filepath.Join(c.Folder, "sciond.toml"),
 			Type:       "daemon",
 		}

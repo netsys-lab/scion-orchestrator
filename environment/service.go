@@ -7,6 +7,8 @@ import (
 	"runtime"
 )
 
+var Services = map[string]*SystemService{}
+
 type SystemService struct {
 	Name       string
 	BinaryPath string
@@ -209,6 +211,10 @@ func installWindowsService(serviceName, binaryPath, configPath string) error {
 
 	cmd = exec.Command("sc", "start", serviceName)
 	return cmd.Run()
+}
+
+func init() {
+	Services = make(map[string]*SystemService)
 }
 
 // Run the scion-as service and also install it as a service, then stop it when seeing that it runs as a service

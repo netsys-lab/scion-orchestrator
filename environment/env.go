@@ -137,7 +137,7 @@ func (endhostEnv *HostEnvironment) Install() error {
 			return errors.New("Failed to configure configDir in " + file + ": " + err.Error())
 		}
 
-		err = fileops.ReplaceStringInFile(file, "{databaseDir}", endhostEnv.DatabasePath+string(os.PathSeparator))
+		err = fileops.ReplaceStringInFile(file, "{databaseDir}", endhostEnv.DatabasePath)
 		if err != nil {
 			return errors.New("Failed to configure databaseDir config in " + file + ": " + err.Error())
 		}

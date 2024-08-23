@@ -89,7 +89,7 @@ func main() {
 		err = runStandalone(env)
 	} else if install {
 		log.Println("[Main] Installing as service")
-		err = runInstall(env)
+		err = runInstall(env, scionConfig)
 	}
 
 	if err != nil {
