@@ -31,6 +31,8 @@ var opts struct {
 	// Install bool `short:"i" long:"install" description:"Install scion-as as a system service" `
 }
 
+var scionConfig *conf.SCIONConfig
+
 func main() {
 
 	args, err := flags.Parse(&opts)
@@ -42,6 +44,17 @@ func main() {
 	log.Println("Starting scion-as")
 	log.Println("Running on ", runtime.GOOS)
 	log.Println("Args: ", args)
+
+	if fileops.FileOrFolderExists("config") {
+		log.Println("Config folder exists")
+		scionConfig, err = conf.LoadSCIONConfig()
+		if err != nil {
+			log.Println("Error loading scion config: ", err)
+			log.Fatal(err)
+		}
+		log.Println("Config loaded")
+		log.Println(scionConfig.Log())
+	}
 
 	endhostEnv := environment.EndhostEnv
 
