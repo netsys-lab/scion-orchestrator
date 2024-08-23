@@ -47,13 +47,13 @@ func main() {
 	log.Println("[Main] Args: ", args)
 
 	if fileops.FileOrFolderExists("config") {
-		log.Println("[Main] Config folder exists")
+		// log.Println("[Main] Config folder exists")
 		scionConfig, err = conf.LoadSCIONConfig()
 		if err != nil {
 			log.Println("[Main] Error loading scion config: ", err)
 			log.Fatal(err)
 		}
-		log.Println("[Main] Config loaded")
+		// log.Println("[Main] Config loaded")
 		log.Println(scionConfig.Log())
 	}
 

@@ -6,16 +6,15 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"sync"
 	"time"
 
 	"github.com/netsys-lab/scion-as/conf"
 	"github.com/netsys-lab/scion-as/environment"
 	"github.com/netsys-lab/scion-as/pkg/fileops"
+	"golang.org/x/sync/errgroup"
 )
 
 func runStandalone(env *environment.HostEnvironment) error {
-	var wg sync.WaitGroup
 
 	// log.Println("[Main] Running standalone")
 	env.ChangeToStandalone()
@@ -35,68 +34,66 @@ func runStandalone(env *environment.HostEnvironment) error {
 		return err
 	}
 
+	eg := errgroup.Group{}
+
 	if scionConfig.Dispatcher != nil {
-		wg.Add(1)
-		go func() {
-			// sciondFile := filepath.Join("config", "sciond.toml")
-			defer wg.Done()
+		eg.Go(func() error {
 			log.Println("[Main] Running scion dispatcher")
 			err := runStandaloneDispatcher(*env, *scionConfig.Dispatcher)
 			if err != nil {
 				log.Println("[Main] Error running dispatcher: ", err)
-				environment.KillAllChilds()
-				log.Fatal(err)
+				return err
 			}
-			log.Println("[Main] Dispatcher running")
-		}()
+			return nil
+		})
 		// TODO: CHeck if dispatcher is running
 		time.Sleep(2 * time.Second)
 	}
 
-	wg.Add(1)
-	go func() {
-		// sciondFile := filepath.Join("config", "sciond.toml")
-		defer wg.Done()
+	eg.Go(func() error {
 		log.Println("[Main] Running scion daemon")
 		err := runStandaloneDaemon(*env, scionConfig.Daemon)
 		if err != nil {
 			log.Println("[Main] Error running daemon: ", err)
-			environment.KillAllChilds()
-			log.Fatal(err)
+			return err
 		}
-		log.Println("[Main] Daemon running")
-	}()
+		return nil
+	})
 
 	for _, service := range scionConfig.BorderRouters {
-		wg.Add(1)
-		log.Println("[Main] Running router: ", service.Name)
-		go func(service conf.SCIONService) {
-			defer wg.Done()
-			err := runStandaloneRouter(*env, service)
-			if err != nil {
-				log.Println("[Main] Error running router: ", err)
-				environment.KillAllChilds()
-				log.Fatal(err)
-			}
+		func(service conf.SCIONService) {
+			eg.Go(func() error {
+				err := runStandaloneRouter(*env, service)
+				if err != nil {
+					log.Println("[Main] Error running router: ", err)
+					return err
+				}
+				return nil
+			})
 		}(service)
 	}
 
 	for _, service := range scionConfig.ControlServices {
-		wg.Add(1)
-		log.Println("[Main] Running control: ", service.Name)
-		go func(service conf.SCIONService) {
-			defer wg.Done()
-			err := runStandaloneControlService(*env, service)
-			if err != nil {
-				log.Println("[Main] Error running control: ", err)
-				environment.KillAllChilds()
-				log.Fatal(err)
-			}
+		func(service conf.SCIONService) {
+			eg.Go(func() error {
+				log.Println("[Main] Running control: ", service.Name)
+				err := runStandaloneControlService(*env, service)
+				if err != nil {
+					log.Println("[Main] Error running control: ", err)
+					return err
+				}
+				return nil
+			})
 		}(service)
 	}
 
-	wg.Wait()
-	log.Println("[Main] All services running")
+	log.Println("[Main] Waiting for shutdown...")
+	err = eg.Wait()
+	if err != nil {
+		environment.KillAllChilds()
+		log.Fatal(err)
+	}
+
 	return nil
 }
 
