@@ -18,6 +18,7 @@ func KillAllChilds() {
 	killInitiated = true
 	log.Println("Killing all child processes")
 	for _, p := range processes {
+		// TODO: Not implemented on Windows...
 		p.Process.Signal(syscall.SIGTERM)
 	}
 }

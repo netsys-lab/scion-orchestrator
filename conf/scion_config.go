@@ -70,15 +70,15 @@ func LoadSCIONConfig() (*SCIONConfig, error) {
 	if fileops.FileOrFolderExists(filepath.Join(c.Folder, "dispatcher.toml")) {
 		c.Dispatcher = &SCIONService{
 			Name:       "Dispatcher",
-			ConfigFile: "dispatcher.toml",
+			ConfigFile: filepath.Join(c.Folder, "dispatcher.toml"),
 			Type:       "dispatcher",
 		}
 	}
 
 	if fileops.FileOrFolderExists(filepath.Join(c.Folder, "sciond.toml")) {
-		c.Dispatcher = &SCIONService{
+		c.Daemon = SCIONService{
 			Name:       "Daemon",
-			ConfigFile: "sciond.toml",
+			ConfigFile: filepath.Join(c.Folder, "sciond.toml"),
 			Type:       "daemon",
 		}
 	}
