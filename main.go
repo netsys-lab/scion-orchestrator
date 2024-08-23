@@ -1,13 +1,10 @@
 package main
 
 import (
-	"context"
 	"log"
 	"os"
 	"path/filepath"
 	"runtime"
-	"sync"
-	"time"
 
 	"github.com/jessevdk/go-flags"
 	"golang.org/x/sync/errgroup"
@@ -119,123 +116,6 @@ func runBackgroundServices(env *environment.HostEnvironment, config *conf.Config
 }
 
 func runService(env *environment.HostEnvironment, config *conf.Config) error {
-	var wg sync.WaitGroup
-
-	// log.Println("[Main] Running as service")
-
-	sciondFile := filepath.Join(env.ConfigPath, "sciond.toml")
-
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		log.Println("[Main] Running scion deamon with config file: ", sciondFile)
-		err := runDaemon(context.Background(), sciondFile)
-		if err != nil {
-			log.Fatal(err)
-		}
-	}()
-
-	wg.Wait()
-	return nil
-}
-
-func runInstall(env *environment.HostEnvironment) error {
-
-	// TODO: Proper error handling, do not fatal in here...
-	// TODO: Mcast Bootstrapping, and all the other things too
-	err := os.MkdirAll(env.ConfigPath, 0777)
-	if err != nil {
-		return err
-	}
-
-	log.Println("[Main] Installing files to ", env.BasePath)
-	err = env.Install()
-	if err != nil {
-		return err
-	}
-
-	binPath := "/usr/bin/"
-
-	// TODO: Windows and MacOS Support!
-	switch runtime.GOOS {
-	case "linux":
-		break
-	}
-
-	log.Println("[Main] Installing System Service")
-	service := &environment.SystemService{
-		Name:       "scion-as",
-		BinaryPath: filepath.Join(binPath, "scion-as"),
-		ConfigPath: filepath.Join(env.ConfigPath, "sciond.toml"),
-	}
-
-	err = service.Install()
-	if err != nil {
-		return err
-	}
-	log.Println("[Main] Service installed")
-
-	err = service.Start()
-	if err != nil {
-		return err
-	}
-	log.Println("[Main] Service started")
-
-	for {
-		if service.IsRunning() {
-			break
-		}
-		time.Sleep(3 * time.Second)
-	}
-	log.Println("[Main] Service is running, closing this one now...")
 
 	return nil
-}
-
-func runControl(ctx context.Context, configFile string) error {
-
-	controlService := environment.StandaloneService{
-		Name:       "control",
-		BinaryPath: filepath.Join("bin", "control"),
-		ConfigPath: configFile,
-		Logfile:    filepath.Join("config", "logs", "control.log"),
-	}
-
-	return controlService.Run()
-}
-
-func runDaemon(ctx context.Context, configFile string) error {
-
-	controlService := environment.StandaloneService{
-		Name:       "daemon",
-		BinaryPath: filepath.Join("bin", "daemon"),
-		ConfigPath: configFile,
-		Logfile:    filepath.Join("config", "logs", "daemon.log"),
-	}
-
-	return controlService.Run()
-}
-
-func runDispatcher(ctx context.Context, configFile string) error {
-
-	controlService := environment.StandaloneService{
-		Name:       "dispatcher",
-		BinaryPath: filepath.Join("bin", "dispatcher"),
-		ConfigPath: configFile,
-		Logfile:    filepath.Join("config", "logs", "dispatcher.log"),
-	}
-
-	return controlService.Run()
-}
-
-func runRouter(ctx context.Context, configFile string) error {
-
-	controlService := environment.StandaloneService{
-		Name:       "router",
-		BinaryPath: filepath.Join("bin", "router"),
-		ConfigPath: configFile,
-		Logfile:    filepath.Join("config", "logs", "router.log"),
-	}
-
-	return controlService.Run()
 }

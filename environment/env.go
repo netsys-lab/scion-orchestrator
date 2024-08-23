@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"strings"
 
 	"github.com/netsys-lab/scion-as/pkg/fileops"
 )
@@ -44,7 +45,7 @@ func (endhostEnv *HostEnvironment) installBinaries() error {
 	}
 	switch runtime.GOOS {
 	case "linux":
-		fmt.Println("Copying binaries to ", "/usr/bin")
+		log.Println("[Install] Copying binaries to ", "/usr/bin")
 		err := fileops.CopyFile(filepath.Join("/usr/bin", "scion-as"), filepath.Join(workDir, "scion-as"))
 		if err != nil {
 			return err
@@ -56,8 +57,9 @@ func (endhostEnv *HostEnvironment) installBinaries() error {
 			return err
 		}
 
-		binaries := []string{"scion", "control", "router", "dispatcher", "gateway"}
+		binaries := []string{"scion", "control", "router", "dispatcher", "gateway", "daemon"}
 		for _, binary := range binaries {
+			log.Println("[Install] Copy binary ", filepath.Join(workDir, "bin", binary), "to ", filepath.Join("/usr/bin", binary))
 			err = fileops.CopyFile(filepath.Join("/usr/bin", binary), filepath.Join(workDir, "bin", binary))
 			if err != nil {
 				return err
@@ -92,49 +94,59 @@ func (endhostEnv *HostEnvironment) Install() error {
 		return err
 	}
 
-	fmt.Println("Copying config files to ", endhostEnv.ConfigPath)
+	wd, err := os.Getwd()
+	if err != nil {
+		return err
+	}
 
+	localConfigFolder := filepath.Join(wd, "config")
 	destSciondFile := filepath.Join(endhostEnv.ConfigPath, "sciond.toml")
-	err = fileops.CopyFile(destSciondFile, filepath.Join("config", "sciond.toml"))
+	destScionASFile := filepath.Join(endhostEnv.ConfigPath, "scion-as.toml")
+
+	localBorderRouterConfigFiles, err := fileops.ListFilesByPrefixAndSuffix(localConfigFolder, "br-", ".toml")
+	if err != nil {
+		return err
+	}
+	localControlConfigs, err := fileops.ListFilesByPrefixAndSuffix(localConfigFolder, "cs-", ".toml")
 	if err != nil {
 		return err
 	}
 
-	destBootstrapperFile := filepath.Join(endhostEnv.ConfigPath, "bootstrapper.toml")
-	err = fileops.CopyFile(destBootstrapperFile, filepath.Join("config", "bootstrapper.toml"))
+	log.Println("[Install] Copying config folder from ", localConfigFolder, " to ", endhostEnv.ConfigPath)
+	err = fileops.CopyDir(localConfigFolder, endhostEnv.ConfigPath)
 	if err != nil {
 		return err
 	}
 
-	destScionHostFile := filepath.Join(endhostEnv.ConfigPath, "scion-as.toml")
-	err = fileops.CopyFile(destScionHostFile, filepath.Join("config", "scion-as.toml"))
-	if err != nil {
-		return err
+	files := []string{destSciondFile, destScionASFile}
+
+	for _, file := range localBorderRouterConfigFiles {
+		correctFile := strings.ReplaceAll(file, fileops.AppendPathSeperatorIfMissing(localConfigFolder), endhostEnv.ConfigPath)
+		files = append(files, correctFile)
 	}
 
-	err = fileops.ReplaceStringInFile(destSciondFile, "{configDir}", endhostEnv.DaemonConfigPath)
-	if err != nil {
-		return errors.New("Failed to configure folder in sciond.toml: " + err.Error())
-	}
-	err = fileops.ReplaceStringInFile(destBootstrapperFile, "{configDir}", endhostEnv.DaemonConfigPath)
-	if err != nil {
-		return errors.New("Failed to configure folder in sciond.toml: " + err.Error())
+	for _, file := range localControlConfigs {
+		correctFile := strings.ReplaceAll(file, fileops.AppendPathSeperatorIfMissing(localConfigFolder), endhostEnv.ConfigPath)
+		files = append(files, correctFile)
 	}
 
-	/*err = fileops.ReplaceStringInFile(filepath.Join(endhostEnv.ConfigPath, "dispatcher.toml"), "{configDir}", endhostEnv.ConfigPath)
-	if err != nil {
-		log.Fatal("Failed to configure folder in sciond.toml: ", err)
-	}*/
+	for _, file := range files {
+		log.Println("[Install] Configuring ", file, "...")
+		err = fileops.ReplaceStringInFile(file, "{configDir}", endhostEnv.ConfigPath)
+		if err != nil {
+			return errors.New("Failed to configure configDir in " + file + ": " + err.Error())
+		}
 
-	// TODO: This could also be only windows specific
-	err = fileops.ReplaceSingleBackslashWithDouble(filepath.Join(endhostEnv.ConfigPath, "sciond.toml"))
-	if err != nil {
-		log.Fatal(err)
-	}
+		err = fileops.ReplaceStringInFile(file, "{databaseDir}", endhostEnv.DatabasePath+string(os.PathSeparator))
+		if err != nil {
+			return errors.New("Failed to configure databaseDir config in " + file + ": " + err.Error())
+		}
 
-	err = fileops.ReplaceSingleBackslashWithDouble(filepath.Join(endhostEnv.ConfigPath, "bootstrapper.toml"))
-	if err != nil {
-		log.Fatal(err)
+		err = fileops.ReplaceSingleBackslashWithDouble(file)
+		if err != nil {
+			log.Fatal(err)
+		}
+		log.Println("[Install] Configured ", file)
 	}
 	return nil
 

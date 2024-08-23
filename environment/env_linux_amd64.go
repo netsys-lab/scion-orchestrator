@@ -7,5 +7,7 @@ func init() {
 		DaemonConfigPath:  "/etc/scion/",
 		ControlConfigPath: "/etc/scion/",
 		RouterConfigPath:  "/etc/scion/",
+		DatabasePath:      "/var/lib/scion/",
+		LogPath:           "/var/log/scion/",
 	}
 }

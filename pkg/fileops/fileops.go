@@ -3,7 +3,6 @@ package fileops
 import (
 	"fmt"
 	"io"
-	"io/fs"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -25,6 +24,8 @@ func CopyFile(dst string, src string) error {
 	}
 	defer destFile.Close()
 
+	// log.Println("[CopyFile] COPY file from ", src, " to ", dst)
+
 	// Copy the contents from source to destination
 	_, err = io.Copy(destFile, sourceFile)
 	if err != nil {
@@ -40,7 +41,53 @@ func CopyFile(dst string, src string) error {
 	return nil
 }
 
-func CopyDir(dst string, src fs.FS, root string) error {
+func AppendPathSeperatorIfMissing(path string) string {
+	if strings.HasSuffix(path, string(filepath.Separator)) {
+		return path
+	}
+	return path + string(filepath.Separator)
+}
+
+// CopyDir copies a whole directory recursively from src to dst
+func CopyDir(src string, dst string) error {
+	// Get properties of source dir
+	srcInfo, err := os.Stat(src)
+	if err != nil {
+		return err
+	}
+
+	// Create destination dir
+	if err := os.MkdirAll(dst, srcInfo.Mode()); err != nil {
+		return err
+	}
+
+	entries, err := ioutil.ReadDir(src)
+	if err != nil {
+		return err
+	}
+
+	// log.Println("[CopyDir] Copying directory from ", src, " to ", dst, " found ", len(entries), " entries")
+
+	for _, entry := range entries {
+		srcPath := filepath.Join(src, entry.Name())
+		dstPath := filepath.Join(dst, entry.Name())
+
+		if entry.IsDir() {
+			// Recursively copy sub-directory
+			if err := CopyDir(srcPath, dstPath); err != nil {
+				return err
+			}
+		} else {
+			// Copy file
+			if err := CopyFile(dstPath, srcPath); err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
+/*func CopyDir(dst string, src fs.FS, root string) error {
 	return fs.WalkDir(src, root, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return err
@@ -58,7 +105,7 @@ func CopyDir(dst string, src fs.FS, root string) error {
 
 		return os.WriteFile(targetPath, data, os.ModePerm)
 	})
-}
+}*/
 
 func ReplaceStringInFile(filePath, oldString, newString string) error {
 	// Read the file into memory
