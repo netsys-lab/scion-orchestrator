@@ -1,0 +1,15 @@
+[general]
+id = "sd"
+config_dir="{configDir}"
+
+[metrics]
+prometheus = "127.0.0.1:30455"
+
+[path_db]
+connection = "{configDir}sd.path.db"
+
+[trust_db]
+connection = "{configDir}sd.trust.db"
+
+[log.console]
+level = "info"
