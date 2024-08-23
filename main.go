@@ -66,9 +66,24 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
+
+		go func() {
+			err = runBackgroundServices()
+			if err != nil {
+				log.Fatal(err)
+			}
+		}()
+
 		err = runService(endhostEnv, config)
 	} else if run {
 		log.Println("Running in standalone mode")
+		go func() {
+			err = runBackgroundServices()
+			if err != nil {
+				log.Fatal(err)
+			}
+		}()
+
 		err = runStandalone(endhostEnv)
 	} else if install {
 		log.Println("Installing as service")
@@ -78,6 +93,11 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+}
+
+func runBackgroundServices() error {
+	log.Println("Running background services")
+	return nil
 }
 
 func runService(env *environment.EndhostEnvironment, config *conf.Config) error {
@@ -118,6 +138,7 @@ func runInstall(env *environment.EndhostEnvironment) error {
 
 	binPath := "/usr/bin/"
 
+	// TODO: Windows and MacOS Support!
 	switch runtime.GOOS {
 	case "linux":
 		break
