@@ -2,8 +2,10 @@ package bootstrap
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"path/filepath"
 	"regexp"
 	"time"
@@ -72,7 +74,7 @@ func createTRCsJSON(directory string, targetFile string) error {
 	return nil
 }
 
-func RunTrcFileWatcher(configDir string) {
+func RunTrcFileWatcher(configDir string) error {
 	// Directory containing the TRC files
 	directoryPath := filepath.Join(configDir, "certs")
 
@@ -80,16 +82,17 @@ func RunTrcFileWatcher(configDir string) {
 	interval := 1 * time.Minute
 
 	for running {
-		fmt.Println("Updating trcs.json...")
+		log.Println("[Bootstrap Server] Updating trcs.json...")
 		err := createTRCsJSON(directoryPath, filepath.Join(configDir, "trcs.json"))
 		if err != nil {
-			fmt.Printf("Error creating TRCs JSON: %v\n", err)
+			return errors.New(fmt.Sprintf("[Bootstrap Server] Error creating TRCs JSON: %v\n", err))
 		} else {
-			fmt.Println("Update complete. Waiting for next interval...")
+			log.Println("[Bootstrap Server] Update complete. Waiting for next interval...")
 		}
 
 		time.Sleep(interval)
 	}
 
-	fmt.Println("Script terminated.")
+	return nil
+
 }

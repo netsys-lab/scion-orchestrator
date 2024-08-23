@@ -14,10 +14,10 @@ import (
 	"github.com/netsys-lab/scion-as/pkg/fileops"
 )
 
-func runStandalone(env *environment.EndhostEnvironment) error {
+func runStandalone(env *environment.HostEnvironment) error {
 	var wg sync.WaitGroup
 
-	// log.Println("Running standalone")
+	// log.Println("[Main] Running standalone")
 	env.ChangeToStandalone()
 
 	err := os.MkdirAll(env.DatabasePath, 0777)
@@ -40,14 +40,14 @@ func runStandalone(env *environment.EndhostEnvironment) error {
 		go func() {
 			// sciondFile := filepath.Join("config", "sciond.toml")
 			defer wg.Done()
-			log.Println("Running scion dispatcher")
+			log.Println("[Main] Running scion dispatcher")
 			err := runStandaloneDispatcher(*env, *scionConfig.Dispatcher)
 			if err != nil {
-				log.Println("Error running dispatcher: ", err)
+				log.Println("[Main] Error running dispatcher: ", err)
 				environment.KillAllChilds()
 				log.Fatal(err)
 			}
-			log.Println("Dispatcher running")
+			log.Println("[Main] Dispatcher running")
 		}()
 		// TODO: CHeck if dispatcher is running
 		time.Sleep(2 * time.Second)
@@ -57,24 +57,24 @@ func runStandalone(env *environment.EndhostEnvironment) error {
 	go func() {
 		// sciondFile := filepath.Join("config", "sciond.toml")
 		defer wg.Done()
-		log.Println("Running scion daemon")
+		log.Println("[Main] Running scion daemon")
 		err := runStandaloneDaemon(*env, scionConfig.Daemon)
 		if err != nil {
-			log.Println("Error running daemon: ", err)
+			log.Println("[Main] Error running daemon: ", err)
 			environment.KillAllChilds()
 			log.Fatal(err)
 		}
-		log.Println("Daemon running")
+		log.Println("[Main] Daemon running")
 	}()
 
 	for _, service := range scionConfig.BorderRouters {
 		wg.Add(1)
-		log.Println("Running router: ", service.Name)
+		log.Println("[Main] Running router: ", service.Name)
 		go func(service conf.SCIONService) {
 			defer wg.Done()
 			err := runStandaloneRouter(*env, service)
 			if err != nil {
-				log.Println("Error running router: ", err)
+				log.Println("[Main] Error running router: ", err)
 				environment.KillAllChilds()
 				log.Fatal(err)
 			}
@@ -83,12 +83,12 @@ func runStandalone(env *environment.EndhostEnvironment) error {
 
 	for _, service := range scionConfig.ControlServices {
 		wg.Add(1)
-		log.Println("Running control: ", service.Name)
+		log.Println("[Main] Running control: ", service.Name)
 		go func(service conf.SCIONService) {
 			defer wg.Done()
 			err := runStandaloneControlService(*env, service)
 			if err != nil {
-				log.Println("Error running control: ", err)
+				log.Println("[Main] Error running control: ", err)
 				environment.KillAllChilds()
 				log.Fatal(err)
 			}
@@ -96,11 +96,11 @@ func runStandalone(env *environment.EndhostEnvironment) error {
 	}
 
 	wg.Wait()
-	log.Println("All services running")
+	log.Println("[Main] All services running")
 	return nil
 }
 
-func runStandaloneRouter(env environment.EndhostEnvironment, service conf.SCIONService) error {
+func runStandaloneRouter(env environment.HostEnvironment, service conf.SCIONService) error {
 
 	tmpRouterFile := filepath.Join(env.TmpConfigPath, fmt.Sprintf("br%d-tmp.toml", service.Index))
 	err := fileops.CopyFile(tmpRouterFile, service.ConfigFile)
@@ -122,7 +122,7 @@ func runStandaloneRouter(env environment.EndhostEnvironment, service conf.SCIONS
 	return router.Run()
 }
 
-func runStandaloneControlService(env environment.EndhostEnvironment, service conf.SCIONService) error {
+func runStandaloneControlService(env environment.HostEnvironment, service conf.SCIONService) error {
 
 	tmpControlFile := filepath.Join(env.TmpConfigPath, fmt.Sprintf("cs%d-tmp.toml", service.Index))
 	err := fileops.CopyFile(tmpControlFile, service.ConfigFile)
@@ -149,7 +149,7 @@ func runStandaloneControlService(env environment.EndhostEnvironment, service con
 	return control.Run()
 }
 
-func runStandaloneDaemon(env environment.EndhostEnvironment, service conf.SCIONService) error {
+func runStandaloneDaemon(env environment.HostEnvironment, service conf.SCIONService) error {
 
 	tmpDaemonFile := filepath.Join(env.TmpConfigPath, "sciond-tmp.toml")
 	err := fileops.CopyFile(tmpDaemonFile, service.ConfigFile)
@@ -176,7 +176,7 @@ func runStandaloneDaemon(env environment.EndhostEnvironment, service conf.SCIONS
 	return daemon.Run()
 }
 
-func runStandaloneDispatcher(env environment.EndhostEnvironment, service conf.SCIONService) error {
+func runStandaloneDispatcher(env environment.HostEnvironment, service conf.SCIONService) error {
 
 	tmpDispatcherFile := filepath.Join(env.TmpConfigPath, "dispatcher-tmp.toml")
 	err := fileops.CopyFile(tmpDispatcherFile, service.ConfigFile)

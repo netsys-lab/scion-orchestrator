@@ -10,9 +10,11 @@ import (
 	"time"
 
 	"github.com/jessevdk/go-flags"
+	"golang.org/x/sync/errgroup"
 
 	"github.com/netsys-lab/scion-as/conf"
 	"github.com/netsys-lab/scion-as/environment"
+	"github.com/netsys-lab/scion-as/pkg/bootstrap"
 	"github.com/netsys-lab/scion-as/pkg/fileops"
 )
 
@@ -40,54 +42,54 @@ func main() {
 		os.Exit(1)
 	}
 
-	log.Println("Starting scion-as")
-	log.Println("Running on ", runtime.GOOS)
-	log.Println("Args: ", args)
+	log.Println("[Main] Starting scion-as")
+	log.Println("[Main] Running on ", runtime.GOOS)
+	log.Println("[Main] Args: ", args)
 
 	if fileops.FileOrFolderExists("config") {
-		log.Println("Config folder exists")
+		log.Println("[Main] Config folder exists")
 		scionConfig, err = conf.LoadSCIONConfig()
 		if err != nil {
-			log.Println("Error loading scion config: ", err)
+			log.Println("[Main] Error loading scion config: ", err)
 			log.Fatal(err)
 		}
-		log.Println("Config loaded")
+		log.Println("[Main] Config loaded")
 		log.Println(scionConfig.Log())
 	}
 
-	endhostEnv := environment.EndhostEnv
+	env := environment.HostEnv
 
 	install := len(args) > 0 && args[0] == "install"
 	run := len(args) > 0 && args[0] == "run"
 
 	if opts.Config != "" { // Run as a service
-		log.Println("Running as service")
+		log.Println("[Main] Running as service")
 		config, err := conf.LoadConfig(opts.Config)
 		if err != nil {
 			log.Fatal(err)
 		}
 
 		go func() {
-			err = runBackgroundServices()
+			err = runBackgroundServices(env)
 			if err != nil {
 				log.Fatal(err)
 			}
 		}()
 
-		err = runService(endhostEnv, config)
+		err = runService(env, config)
 	} else if run {
-		log.Println("Running in standalone mode")
+		log.Println("[Main] Running in standalone mode")
 		go func() {
-			err = runBackgroundServices()
+			err = runBackgroundServices(env)
 			if err != nil {
 				log.Fatal(err)
 			}
 		}()
 
-		err = runStandalone(endhostEnv)
+		err = runStandalone(env)
 	} else if install {
-		log.Println("Installing as service")
-		err = runInstall(endhostEnv)
+		log.Println("[Main] Installing as service")
+		err = runInstall(env)
 	}
 
 	if err != nil {
@@ -95,22 +97,35 @@ func main() {
 	}
 }
 
-func runBackgroundServices() error {
-	log.Println("Running background services")
-	return nil
+func runBackgroundServices(env *environment.HostEnvironment) error {
+	log.Println("[Main] Running background services")
+
+	eg := errgroup.Group{}
+
+	eg.Go(func() error {
+		return bootstrap.RunTrcFileWatcher(env.ConfigPath)
+	})
+
+	eg.Go(func() error {
+		return bootstrap.RunBootstrapServer(env.ConfigPath)
+	})
+
+	err := eg.Wait()
+
+	return err
 }
 
-func runService(env *environment.EndhostEnvironment, config *conf.Config) error {
+func runService(env *environment.HostEnvironment, config *conf.Config) error {
 	var wg sync.WaitGroup
 
-	// log.Println("Running as service")
+	// log.Println("[Main] Running as service")
 
 	sciondFile := filepath.Join(env.ConfigPath, "sciond.toml")
 
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		log.Println("Running scion deamon with config file: ", sciondFile)
+		log.Println("[Main] Running scion deamon with config file: ", sciondFile)
 		err := runDaemon(context.Background(), sciondFile)
 		if err != nil {
 			log.Fatal(err)
@@ -121,7 +136,7 @@ func runService(env *environment.EndhostEnvironment, config *conf.Config) error 
 	return nil
 }
 
-func runInstall(env *environment.EndhostEnvironment) error {
+func runInstall(env *environment.HostEnvironment) error {
 
 	// TODO: Proper error handling, do not fatal in here...
 	// TODO: Mcast Bootstrapping, and all the other things too
@@ -130,7 +145,7 @@ func runInstall(env *environment.EndhostEnvironment) error {
 		return err
 	}
 
-	log.Println("Installing files to ", env.BasePath)
+	log.Println("[Main] Installing files to ", env.BasePath)
 	err = env.Install()
 	if err != nil {
 		return err
@@ -144,7 +159,7 @@ func runInstall(env *environment.EndhostEnvironment) error {
 		break
 	}
 
-	log.Println("Installing System Service")
+	log.Println("[Main] Installing System Service")
 	service := &environment.SystemService{
 		Name:       "scion-as",
 		BinaryPath: filepath.Join(binPath, "scion-as"),
@@ -155,13 +170,13 @@ func runInstall(env *environment.EndhostEnvironment) error {
 	if err != nil {
 		return err
 	}
-	log.Println("Service installed")
+	log.Println("[Main] Service installed")
 
 	err = service.Start()
 	if err != nil {
 		return err
 	}
-	log.Println("Service started")
+	log.Println("[Main] Service started")
 
 	for {
 		if service.IsRunning() {
@@ -169,7 +184,7 @@ func runInstall(env *environment.EndhostEnvironment) error {
 		}
 		time.Sleep(3 * time.Second)
 	}
-	log.Println("Service is running, closing this one now...")
+	log.Println("[Main] Service is running, closing this one now...")
 
 	return nil
 }

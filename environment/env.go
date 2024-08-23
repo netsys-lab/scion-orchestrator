@@ -11,9 +11,9 @@ import (
 	"github.com/netsys-lab/scion-as/pkg/fileops"
 )
 
-var EndhostEnv *EndhostEnvironment
+var HostEnv *HostEnvironment
 
-type EndhostEnvironment struct {
+type HostEnvironment struct {
 	BasePath          string
 	ConfigPath        string
 	DaemonConfigPath  string
@@ -24,7 +24,7 @@ type EndhostEnvironment struct {
 	LogPath           string
 }
 
-func (endhostEnv *EndhostEnvironment) ChangeToStandalone() {
+func (endhostEnv *HostEnvironment) ChangeToStandalone() {
 	dir, _ := os.Getwd()
 	dir = filepath.Join(dir, "config")
 	endhostEnv.BasePath = dir
@@ -37,7 +37,7 @@ func (endhostEnv *EndhostEnvironment) ChangeToStandalone() {
 	endhostEnv.LogPath = filepath.Join(dir, "logs")
 }
 
-func (endhostEnv *EndhostEnvironment) installBinaries() error {
+func (endhostEnv *HostEnvironment) installBinaries() error {
 	workDir, err := os.Getwd()
 	if err != nil {
 		return err
@@ -81,13 +81,13 @@ func (endhostEnv *EndhostEnvironment) installBinaries() error {
 	return nil
 }
 
-func (endhostEnv *EndhostEnvironment) Install() error {
+func (endhostEnv *HostEnvironment) Install() error {
 	err := os.MkdirAll(endhostEnv.BasePath, 0777)
 	if err != nil {
 		return err
 	}
 
-	err = EndhostEnv.installBinaries()
+	err = HostEnv.installBinaries()
 	if err != nil {
 		return err
 	}

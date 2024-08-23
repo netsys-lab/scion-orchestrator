@@ -7,6 +7,7 @@ go 1.22
 require (
 	github.com/jessevdk/go-flags v1.5.0
 	github.com/pelletier/go-toml/v2 v2.2.2
+	golang.org/x/sync v0.8.0
 )
 
 require (

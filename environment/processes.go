@@ -16,7 +16,7 @@ func KillAllChilds() {
 		return
 	}
 	killInitiated = true
-	log.Println("Killing all child processes")
+	log.Println("[Signal] Killing all child processes")
 	for _, p := range processes {
 		// TODO: Not implemented on Windows...
 		p.Process.Signal(syscall.SIGTERM)
@@ -30,7 +30,7 @@ func init() {
 	signal.Notify(cancelChan, syscall.SIGTERM, syscall.SIGINT)
 	go func() {
 		sig := <-cancelChan
-		log.Printf("Caught signal %v", sig)
+		log.Printf("[Signal] Caught signal %v", sig)
 		KillAllChilds()
 	}()
 }

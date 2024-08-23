@@ -49,7 +49,7 @@ func RunBootstrapServer(configDir string) error {
 
 	// Start server
 	// errorLog.Println("Starting server on :8041")
-	log.Println("Starting Bootstrap server on :8041")
+	log.Println("[Bootstrap Server] Starting Bootstrap server on :8041")
 	if err := http.ListenAndServe(":8041", nil); err != nil {
 		return err
 	}

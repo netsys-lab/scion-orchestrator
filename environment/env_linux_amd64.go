@@ -1,7 +1,7 @@
 package environment
 
 func init() {
-	EndhostEnv = &EndhostEnvironment{
+	HostEnv = &HostEnvironment{
 		BasePath:          "/etc/scion/",
 		ConfigPath:        "/etc/scion/",
 		DaemonConfigPath:  "/etc/scion/",

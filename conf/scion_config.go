@@ -87,6 +87,6 @@ func LoadSCIONConfig() (*SCIONConfig, error) {
 }
 
 func (c *SCIONConfig) Log() string {
-	return fmt.Sprintf("Control Services: %v\nBorder Routers: %v\nDispatcher: %v\nDaemon: %v\n",
-		c.ControlServices, c.BorderRouters, c.Dispatcher, c.Daemon)
+	return fmt.Sprintf("[SCIONConfig] Got Control Services: %d; Border Routers: %d; Dispatcher: %t; Daemon: %t;",
+		len(c.ControlServices), len(c.BorderRouters), c.Dispatcher != nil, true)
 }
