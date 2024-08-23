@@ -46,6 +46,14 @@ func main() {
 	log.Println("[Main] Running on ", runtime.GOOS)
 	log.Println("[Main] Args: ", args)
 
+	configPath := filepath.Join("config", "scion-as.toml")
+	if opts.Config != "" {
+		configPath = opts.Config
+	}
+
+	config, err := conf.LoadConfig(configPath)
+	log.Println("[Main] scion-as config loaded successfully")
+
 	if fileops.FileOrFolderExists("config") {
 		// log.Println("[Main] Config folder exists")
 		scionConfig, err = conf.LoadSCIONConfig()
@@ -64,13 +72,8 @@ func main() {
 
 	if opts.Config != "" { // Run as a service
 		log.Println("[Main] Running as service")
-		config, err := conf.LoadConfig(opts.Config)
-		if err != nil {
-			log.Fatal(err)
-		}
-
 		go func() {
-			err = runBackgroundServices(env)
+			err = runBackgroundServices(env, config)
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -80,7 +83,7 @@ func main() {
 	} else if run {
 		log.Println("[Main] Running in standalone mode")
 		go func() {
-			err = runBackgroundServices(env)
+			err = runBackgroundServices(env, config)
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -97,7 +100,7 @@ func main() {
 	}
 }
 
-func runBackgroundServices(env *environment.HostEnvironment) error {
+func runBackgroundServices(env *environment.HostEnvironment, config *conf.Config) error {
 	log.Println("[Main] Running background services")
 
 	eg := errgroup.Group{}
@@ -107,7 +110,7 @@ func runBackgroundServices(env *environment.HostEnvironment) error {
 	})
 
 	eg.Go(func() error {
-		return bootstrap.RunBootstrapServer(env.ConfigPath)
+		return bootstrap.RunBootstrapServer(env.ConfigPath, config.Bootstrap.Server)
 	})
 
 	err := eg.Wait()

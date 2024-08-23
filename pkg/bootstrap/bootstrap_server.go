@@ -9,7 +9,7 @@ import (
 	"strings"
 )
 
-func RunBootstrapServer(configDir string) error {
+func RunBootstrapServer(configDir string, url string) error {
 	// TODO: Configure logging
 	// TODO: Source IP Validation
 	//accessLog := log.New(os.Stdout, "ACCESS: ", log.LstdFlags)
@@ -47,10 +47,15 @@ func RunBootstrapServer(configDir string) error {
 		}
 	})
 
+	listenUrl := ":8041"
+	if url != "" {
+		listenUrl = url
+	}
+
 	// Start server
 	// errorLog.Println("Starting server on :8041")
-	log.Println("[Bootstrap Server] Starting Bootstrap server on :8041")
-	if err := http.ListenAndServe(":8041", nil); err != nil {
+	log.Println("[Bootstrap Server] Starting Bootstrap server on ", listenUrl)
+	if err := http.ListenAndServe(listenUrl, nil); err != nil {
 		return err
 	}
 

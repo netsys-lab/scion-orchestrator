@@ -7,12 +7,20 @@ import (
 )
 
 type Config struct {
-	Command string
+	Command   string
+	Bootstrap Bootstrap
+}
+
+type Bootstrap struct {
+	Server string
 }
 
 func NewConfig() *Config {
 	return &Config{
 		Command: "",
+		Bootstrap: Bootstrap{
+			Server: "",
+		},
 	}
 }
 
