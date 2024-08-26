@@ -44,34 +44,76 @@ func GetBorderRouters() []*SystemService {
 func UpdateHealthCheck() bool {
 	allServicesRunning := true
 	for _, service := range Services {
-		if strings.Contains(service.BinaryPath, "control") && !service.IsRunning() {
-			met := metrics.ServiceStatus{
-				Status:  metrics.SERVICE_STATUS_ERROR,
-				Message: "Service not running",
+		if strings.Contains(service.BinaryPath, "control") {
+			if !service.IsRunning() {
+				met := metrics.ServiceStatus{
+					Status:  metrics.SERVICE_STATUS_ERROR,
+					Message: "Service not running",
+				}
+				metrics.ASStatus.ControlServices[service.Name] = met
+				allServicesRunning = false
+			} else {
+				met := metrics.ServiceStatus{
+					Status: metrics.SERVICE_STATUS_RUNNING,
+				}
+				metrics.ASStatus.ControlServices[service.Name] = met
 			}
-			metrics.ASStatus.ControlServices[service.Name] = met
-			allServicesRunning = false
-		} else if strings.Contains(service.BinaryPath, "router") && !service.IsRunning() {
-			met := metrics.ServiceStatus{
-				Status:  metrics.SERVICE_STATUS_ERROR,
-				Message: "Service not running",
+		} else if strings.Contains(service.BinaryPath, "router") {
+			if !service.IsRunning() {
+				met := metrics.ServiceStatus{
+					Status:  metrics.SERVICE_STATUS_ERROR,
+					Message: "Service not running",
+				}
+				metrics.ASStatus.BorderRouters[service.Name] = met
+				allServicesRunning = false
+			} else {
+				met := metrics.ServiceStatus{
+					Status: metrics.SERVICE_STATUS_RUNNING,
+				}
+				metrics.ASStatus.BorderRouters[service.Name] = met
 			}
-			metrics.ASStatus.BorderRouters[service.Name] = met
-			allServicesRunning = false
-		} else if strings.Contains(service.BinaryPath, "dispatcher") && !service.IsRunning() {
-			met := metrics.ServiceStatus{
-				Status:  metrics.SERVICE_STATUS_ERROR,
-				Message: "Service not running",
+		} else if strings.Contains(service.BinaryPath, "dispatcher") {
+			if !service.IsRunning() {
+				met := metrics.ServiceStatus{
+					Status:  metrics.SERVICE_STATUS_ERROR,
+					Message: "Service not running",
+				}
+				metrics.ASStatus.Dispatcher = met
+				allServicesRunning = false
+			} else {
+				met := metrics.ServiceStatus{
+					Status: metrics.SERVICE_STATUS_RUNNING,
+				}
+				metrics.ASStatus.Dispatcher = met
 			}
-			metrics.ASStatus.Dispatcher = met
-			allServicesRunning = false
-		} else if strings.Contains(service.BinaryPath, "daemon") && !service.IsRunning() {
-			met := metrics.ServiceStatus{
-				Status:  metrics.SERVICE_STATUS_ERROR,
-				Message: "Service not running",
+		} else if strings.Contains(service.BinaryPath, "daemon") {
+			if !service.IsRunning() {
+				met := metrics.ServiceStatus{
+					Status:  metrics.SERVICE_STATUS_ERROR,
+					Message: "Service not running",
+				}
+				metrics.ASStatus.Daemon = met
+				allServicesRunning = false
+			} else {
+				met := metrics.ServiceStatus{
+					Status: metrics.SERVICE_STATUS_RUNNING,
+				}
+				metrics.ASStatus.Daemon = met
 			}
-			metrics.ASStatus.Daemon = met
-			allServicesRunning = false
+		} else if strings.Contains(service.BinaryPath, "scion-as") {
+			if !service.IsRunning() {
+				met := metrics.ServiceStatus{
+					Status:  metrics.SERVICE_STATUS_ERROR,
+					Message: "Service not running",
+				}
+				metrics.ASStatus.BootstrapServer = met
+				allServicesRunning = false
+			} else {
+				met := metrics.ServiceStatus{
+					Status: metrics.SERVICE_STATUS_RUNNING,
+				}
+				metrics.ASStatus.BootstrapServer = met
+			}
 		}
 
 	}
@@ -92,7 +134,7 @@ func LoadServices(env *HostEnvironment, config *conf.SCIONConfig) error {
 		service := &SystemService{
 			Name:       config.Dispatcher.Name,
 			BinaryPath: filepath.Join(binPath, "dispatcher"),
-			ConfigPath: config.Dispatcher.ConfigFile,
+			ConfigPath: filepath.Join(env.ConfigPath, config.Dispatcher.ConfigFile),
 		}
 
 		Services[config.Dispatcher.Name] = service
@@ -102,7 +144,7 @@ func LoadServices(env *HostEnvironment, config *conf.SCIONConfig) error {
 	service := &SystemService{
 		Name:       config.Daemon.Name,
 		BinaryPath: filepath.Join(binPath, "daemon"),
-		ConfigPath: config.Daemon.ConfigFile,
+		ConfigPath: filepath.Join(env.ConfigPath, config.Daemon.ConfigFile),
 	}
 
 	Services[config.Daemon.Name] = service
@@ -112,7 +154,7 @@ func LoadServices(env *HostEnvironment, config *conf.SCIONConfig) error {
 		service := &SystemService{
 			Name:       service.Name,
 			BinaryPath: filepath.Join(binPath, "control"),
-			ConfigPath: service.ConfigFile,
+			ConfigPath: filepath.Join(env.ConfigPath, service.ConfigFile),
 		}
 
 		Services[service.Name] = service
@@ -123,7 +165,7 @@ func LoadServices(env *HostEnvironment, config *conf.SCIONConfig) error {
 		service := &SystemService{
 			Name:       service.Name,
 			BinaryPath: filepath.Join(binPath, "router"),
-			ConfigPath: service.ConfigFile,
+			ConfigPath: filepath.Join(env.ConfigPath, service.ConfigFile),
 		}
 
 		Services[service.Name] = service

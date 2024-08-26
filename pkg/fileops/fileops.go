@@ -9,6 +9,10 @@ import (
 	"strings"
 )
 
+func GetFileOrFolderName(path string) string {
+	return filepath.Base(path)
+}
+
 func CopyFile(dst string, src string) error {
 	// Open the source file
 	sourceFile, err := os.Open(src)
