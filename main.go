@@ -13,6 +13,7 @@ import (
 	"github.com/netsys-lab/scion-as/environment"
 	"github.com/netsys-lab/scion-as/pkg/bootstrap"
 	"github.com/netsys-lab/scion-as/pkg/fileops"
+	"github.com/netsys-lab/scion-as/pkg/metrics"
 )
 
 var opts struct {
@@ -100,19 +101,17 @@ func main() {
 func runBackgroundServices(env *environment.HostEnvironment, config *conf.Config) error {
 	log.Println("[Main] Running background services")
 
-	eg := errgroup.Group{}
+	var eg errgroup.Group
 
 	eg.Go(func() error {
-		return bootstrap.RunTrcFileWatcher(env.ConfigPath)
+		return bootstrap.RunBootstrapService(env.ConfigPath, config.Bootstrap.Server)
 	})
 
 	eg.Go(func() error {
-		return bootstrap.RunBootstrapServer(env.ConfigPath, config.Bootstrap.Server)
+		return metrics.RunStatusHTTPServer(config.Metrics.Server)
 	})
 
-	err := eg.Wait()
-
-	return err
+	return eg.Wait()
 }
 
 func runService(env *environment.HostEnvironment, config *conf.Config) error {

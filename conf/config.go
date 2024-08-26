@@ -9,9 +9,14 @@ import (
 type Config struct {
 	Command   string
 	Bootstrap Bootstrap
+	Metrics   Metrics
 }
 
 type Bootstrap struct {
+	Server string
+}
+
+type Metrics struct {
 	Server string
 }
 
@@ -19,6 +24,9 @@ func NewConfig() *Config {
 	return &Config{
 		Command: "",
 		Bootstrap: Bootstrap{
+			Server: "",
+		},
+		Metrics: Metrics{
 			Server: "",
 		},
 	}

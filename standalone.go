@@ -63,6 +63,7 @@ func runStandalone(env *environment.HostEnvironment) error {
 	for _, service := range scionConfig.BorderRouters {
 		func(service conf.SCIONService) {
 			eg.Go(func() error {
+				log.Println("[Main] Running router: ", service.Name)
 				err := runStandaloneRouter(*env, service)
 				if err != nil {
 					log.Println("[Main] Error running router: ", err)

@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"time"
 
 	"github.com/netsys-lab/scion-as/conf"
 	"github.com/netsys-lab/scion-as/environment"
@@ -107,6 +108,25 @@ func runInstall(env *environment.HostEnvironment, config *conf.SCIONConfig) erro
 		return err
 	}
 	log.Println("[Install] SCION-AS Service installed")
+
+	for _, service := range environment.Services {
+		log.Println("[Install] Starting service: ", service.Name)
+		err = service.Start()
+		if err != nil {
+			return err
+		}
+		log.Println("[Install] Started service: ", service.Name)
+	}
+
+	time.Sleep(50 * time.Second)
+	for _, service := range environment.Services {
+		log.Println("[Install] Stopping service: ", service.Name)
+		err = service.Stop()
+		if err != nil {
+			return err
+		}
+		log.Println("[Install] Stopped service: ", service.Name)
+	}
 
 	/*err = service.Start()
 	if err != nil {
