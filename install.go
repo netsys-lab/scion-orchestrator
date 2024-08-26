@@ -1,17 +1,19 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
-	"path/filepath"
-	"runtime"
 	"time"
 
 	"github.com/netsys-lab/scion-as/conf"
 	"github.com/netsys-lab/scion-as/environment"
+	"github.com/netsys-lab/scion-as/pkg/metrics"
 )
 
 func runInstall(env *environment.HostEnvironment, config *conf.SCIONConfig) error {
+
+	// TODO: Binary copy does not work when services are running
 
 	// TODO: Proper error handling, do not fatal in here...
 	// TODO: Mcast Bootstrapping, and all the other things too
@@ -20,74 +22,64 @@ func runInstall(env *environment.HostEnvironment, config *conf.SCIONConfig) erro
 		return err
 	}
 
-	log.Println("[Main] Installing files to ", env.BasePath)
+	err = environment.LoadServices(env, config)
+	if err != nil {
+		return err
+	}
+
+	log.Println("[Install] Stopping all services")
+	err = environment.StopAllServices()
+	if err != nil {
+		return err
+	}
+
+	log.Println("[Install] Installing files to ", env.BasePath)
 	err = env.Install()
 	if err != nil {
 		return err
 	}
 
-	binPath := "/usr/bin/"
-
-	// TODO: Windows and MacOS Support!
-	switch runtime.GOOS {
-	case "linux":
-		break
-	}
-
 	if config.Dispatcher != nil {
 		log.Println("[Install] Installing Dispatcher Service...")
-		service := &environment.SystemService{
-			Name:       config.Dispatcher.Name,
-			BinaryPath: filepath.Join(binPath, "dispatcher"),
-			ConfigPath: config.Dispatcher.ConfigFile,
+		service, ok := environment.Services[config.Dispatcher.Name]
+		if !ok {
+			log.Println("[Install] Dispatcher Service not found in environment, name mismatch...")
+			return fmt.Errorf("Dispatcher Service not found in environment, name mismatch...")
 		}
 
 		err := service.Install()
 		if err != nil {
 			return err
 		}
-		environment.Services[config.Dispatcher.Name] = service
 		log.Println("[Install] Installed Dispatcher Service")
 	}
 
 	log.Println("[Install] Installing Daemon Service...")
-	service := &environment.SystemService{
-		Name:       config.Daemon.Name,
-		BinaryPath: filepath.Join(binPath, "daemon"),
-		ConfigPath: config.Daemon.ConfigFile,
+	service, ok := environment.Services[config.Daemon.Name]
+	if !ok {
+		log.Println("[Install] Dispatcher Service not found in environment, name mismatch...")
+		return fmt.Errorf("Daemon Service not found in environment, name mismatch...")
 	}
 
 	err = service.Install()
 	if err != nil {
 		return err
 	}
-	environment.Services[config.Daemon.Name] = service
 	log.Println("[Install] Installed Daemon Service")
 
-	for _, service := range config.ControlServices {
+	controlServices := environment.GetControlServices()
+	for _, service := range controlServices {
 		log.Println("[Install] Installing Control Service: ", service.Name)
-		service := &environment.SystemService{
-			Name:       service.Name,
-			BinaryPath: filepath.Join(binPath, "control"),
-			ConfigPath: service.ConfigFile,
-		}
-
 		err := service.Install()
 		if err != nil {
 			return err
 		}
-		environment.Services[service.Name] = service
 		log.Println("[Install] Installed Control Service: ", service.Name)
 	}
 
-	for _, service := range config.BorderRouters {
+	borderRouters := environment.GetBorderRouters()
+	for _, service := range borderRouters {
 		log.Println("[Install] Installing Border Router Service: ", service.Name)
-		service := &environment.SystemService{
-			Name:       service.Name,
-			BinaryPath: filepath.Join(binPath, "router"),
-			ConfigPath: service.ConfigFile,
-		}
-
 		err := service.Install()
 		if err != nil {
 			return err
@@ -97,10 +89,10 @@ func runInstall(env *environment.HostEnvironment, config *conf.SCIONConfig) erro
 	}
 
 	log.Println("[Install] Installing SCION-AS Service")
-	service = &environment.SystemService{
-		Name:       "scion-as",
-		BinaryPath: filepath.Join(binPath, "scion-as"),
-		ConfigPath: filepath.Join(env.ConfigPath, "sciond.toml"),
+	service, ok = environment.Services["scion-as"]
+	if !ok {
+		log.Println("[Install] SCION AS Service not found in environment, name mismatch...")
+		return fmt.Errorf("SCION AS Service not found in environment, name mismatch...")
 	}
 
 	err = service.Install()
@@ -109,38 +101,21 @@ func runInstall(env *environment.HostEnvironment, config *conf.SCIONConfig) erro
 	}
 	log.Println("[Install] SCION-AS Service installed")
 
-	for _, service := range environment.Services {
-		log.Println("[Install] Starting service: ", service.Name)
-		err = service.Start()
-		if err != nil {
-			return err
-		}
-		log.Println("[Install] Started service: ", service.Name)
-	}
-
-	time.Sleep(50 * time.Second)
-	for _, service := range environment.Services {
-		log.Println("[Install] Stopping service: ", service.Name)
-		err = service.Stop()
-		if err != nil {
-			return err
-		}
-		log.Println("[Install] Stopped service: ", service.Name)
-	}
-
-	/*err = service.Start()
+	err = environment.StartAllServices()
 	if err != nil {
 		return err
 	}
-	log.Println("[Main] Service started")
 
-	for {
-		if service.IsRunning() {
-			break
-		}
-		time.Sleep(3 * time.Second)
+	log.Println("[Main] All Services started, waiting for health check")
+	// TODO: Health check
+	time.Sleep(5 * time.Second)
+	if !environment.UpdateHealthCheck() {
+		log.Println("[Main] Not all services started properly, see the details")
+		jsonStatus, _ := metrics.ASStatus.Json()
+		fmt.Printf("%s", string(jsonStatus))
+
+		return fmt.Errorf("Not all services started properly, Please check the logs or try again")
 	}
-	log.Println("[Main] Service is running, closing this one now...")
-	*/
+
 	return nil
 }

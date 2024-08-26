@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"time"
 
 	"github.com/jessevdk/go-flags"
 	"golang.org/x/sync/errgroup"
@@ -79,6 +80,8 @@ func main() {
 		}()
 
 		err = runService(env, config)
+		// TODO: Add proper service initialization here
+		// time.Sleep(10 * time.Minute)
 	} else if run {
 		log.Println("[Main] Running in standalone mode")
 		go func() {
@@ -123,6 +126,7 @@ func runBackgroundServices(env *environment.HostEnvironment, config *conf.Config
 }
 
 func runService(env *environment.HostEnvironment, config *conf.Config) error {
-
+	log.Println("[Main] Running service")
+	time.Sleep(30 * time.Second)
 	return nil
 }
