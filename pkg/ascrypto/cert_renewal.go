@@ -84,6 +84,11 @@ func (cr *CertificateRenewer) CheckIfCertExpiresSoon() (bool, error) {
 
 func (cr *CertificateRenewer) RunRenew() error {
 
+	err := cr.LoadCertificateFiles()
+	if err != nil {
+		return fmt.Errorf("Failed to load certificate files, %s", err)
+	}
+
 	metrics.ASStatus.CertificateRenewal.Status = metrics.SERVICE_STATUS_RUNNING
 
 	log.Println("[Renewer] Checking cert ", cr.CertPath, " to expire within ", cr.RenewBeforeHours, " hours")
@@ -147,6 +152,7 @@ func (cr *CertificateRenewer) RunRenew() error {
 }
 
 func (cr *CertificateRenewer) Run() {
+	log.Println("[Renewer] Starting certificate renewal service")
 	for {
 		err := cr.RunRenew()
 		if err != nil {
