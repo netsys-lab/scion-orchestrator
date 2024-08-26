@@ -11,6 +11,7 @@ import (
 
 	"github.com/netsys-lab/scion-as/conf"
 	"github.com/netsys-lab/scion-as/environment"
+	"github.com/netsys-lab/scion-as/pkg/ascrypto"
 	"github.com/netsys-lab/scion-as/pkg/bootstrap"
 	"github.com/netsys-lab/scion-as/pkg/fileops"
 	"github.com/netsys-lab/scion-as/pkg/metrics"
@@ -109,6 +110,13 @@ func runBackgroundServices(env *environment.HostEnvironment, config *conf.Config
 
 	eg.Go(func() error {
 		return metrics.RunStatusHTTPServer(config.Metrics.Server)
+	})
+
+	eg.Go(func() error {
+		// TODO: Obtain ISD AS from config
+		renewer := ascrypto.NewCertificateRenewer(env.ConfigPath, "71-9999", 6)
+		renewer.Run()
+		return nil
 	})
 
 	return eg.Wait()

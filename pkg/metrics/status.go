@@ -16,11 +16,12 @@ type ServiceStatus struct {
 }
 
 type ASServiceStatus struct {
-	BootstrapServer ServiceStatus
-	Dispatcher      ServiceStatus
-	Daemon          ServiceStatus
-	ControlServices map[string]ServiceStatus
-	BorderRouters   map[string]ServiceStatus
+	BootstrapServer    ServiceStatus
+	Dispatcher         ServiceStatus
+	Daemon             ServiceStatus
+	CertificateRenewal ServiceStatus
+	ControlServices    map[string]ServiceStatus
+	BorderRouters      map[string]ServiceStatus
 }
 
 var ASStatus *ASServiceStatus
@@ -38,6 +39,9 @@ func init() {
 			Status: SERVICE_STATUS_INIT,
 		},
 		Daemon: ServiceStatus{
+			Status: SERVICE_STATUS_INIT,
+		},
+		CertificateRenewal: ServiceStatus{
 			Status: SERVICE_STATUS_INIT,
 		},
 		ControlServices: map[string]ServiceStatus{},
