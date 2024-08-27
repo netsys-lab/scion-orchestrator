@@ -2,9 +2,7 @@ package environment
 
 import (
 	"log"
-	"os"
 	"os/exec"
-	"os/signal"
 	"syscall"
 )
 
@@ -25,12 +23,4 @@ func KillAllChilds() {
 
 func init() {
 	processes = make([]*exec.Cmd, 0)
-	cancelChan := make(chan os.Signal, 1)
-	// catch SIGETRM or SIGINTERRUPT
-	signal.Notify(cancelChan, syscall.SIGTERM, syscall.SIGINT)
-	go func() {
-		sig := <-cancelChan
-		log.Printf("[Signal] Caught signal %v", sig)
-		KillAllChilds()
-	}()
 }

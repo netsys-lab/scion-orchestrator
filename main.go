@@ -3,9 +3,10 @@ package main
 import (
 	"log"
 	"os"
+	"os/signal"
 	"path/filepath"
 	"runtime"
-	"time"
+	"syscall"
 
 	"github.com/jessevdk/go-flags"
 	"golang.org/x/sync/errgroup"
@@ -70,6 +71,10 @@ func main() {
 	install := len(args) > 0 && args[0] == "install"
 	run := len(args) > 0 && args[0] == "run"
 
+	cancelChan := make(chan os.Signal, 1)
+	// catch SIGETRM or SIGINTERRUPT
+	signal.Notify(cancelChan, syscall.SIGTERM, syscall.SIGINT)
+
 	if opts.Config != "" { // Run as a service
 		log.Println("[Main] Running as service")
 		go func() {
@@ -78,8 +83,17 @@ func main() {
 				log.Fatal(err)
 			}
 		}()
+		go func() {
+			err = runService(env, config)
+			if err != nil {
+				log.Fatal(err)
+			}
+		}()
 
-		err = runService(env, config)
+		log.Println("[Main] SCION-AS Service started, waiting for termination signal")
+		sig := <-cancelChan
+		log.Printf("[Signal] Caught signal %v", sig)
+
 		// TODO: Add proper service initialization here
 		// time.Sleep(10 * time.Minute)
 	} else if run {
@@ -90,7 +104,11 @@ func main() {
 				log.Fatal(err)
 			}
 		}()
-
+		go func() {
+			sig := <-cancelChan
+			log.Printf("[Signal] Caught signal %v", sig)
+			environment.KillAllChilds()
+		}()
 		err = runStandalone(env)
 	} else if install {
 		log.Println("[Main] Installing as service")
@@ -132,7 +150,7 @@ func runBackgroundServices(env *environment.HostEnvironment, config *conf.Config
 }
 
 func runService(env *environment.HostEnvironment, config *conf.Config) error {
-	log.Println("[Main] Running service")
-	time.Sleep(30 * time.Second)
+	//log.Println("[Main] Running service")
+	//time.Sleep(30 * time.Second)
 	return nil
 }
