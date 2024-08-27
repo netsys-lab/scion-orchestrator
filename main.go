@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"os/signal"
@@ -70,6 +71,7 @@ func main() {
 
 	install := len(args) > 0 && args[0] == "install"
 	run := len(args) > 0 && args[0] == "run"
+	shutdown := len(args) > 0 && args[0] == "shutdown"
 
 	cancelChan := make(chan os.Signal, 1)
 	// catch SIGETRM or SIGINTERRUPT
@@ -113,11 +115,35 @@ func main() {
 	} else if install {
 		log.Println("[Main] Installing as service")
 		err = runInstall(env, scionConfig)
+	} else if shutdown {
+		// log.Println("[Main] Shutting down all service")
+		err = runShutdown(env, scionConfig)
+		if err != nil {
+			log.Fatal(err)
+		}
+		log.Println("[Main] All services stopped. AS Status is now:")
+		jsonStatus, _ := metrics.ASStatus.Json()
+		fmt.Printf("%s", string(jsonStatus))
 	}
 
 	if err != nil {
 		log.Fatal(err)
 	}
+}
+
+func runShutdown(env *environment.HostEnvironment, config *conf.SCIONConfig) error {
+	log.Println("[Main] Shutting down SCION AS")
+	err := environment.LoadServices(env, config)
+	if err != nil {
+		return err
+	}
+
+	log.Println("[Main] Stopping all services")
+	err = environment.StopAllServices()
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func runBackgroundServices(env *environment.HostEnvironment, config *conf.Config) error {
