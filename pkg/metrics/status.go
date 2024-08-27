@@ -22,6 +22,8 @@ type ASServiceStatus struct {
 	CertificateRenewal ServiceStatus
 	ControlServices    map[string]ServiceStatus
 	BorderRouters      map[string]ServiceStatus
+	Status             string
+	LastUpdated        string
 }
 
 var ASStatus *ASServiceStatus

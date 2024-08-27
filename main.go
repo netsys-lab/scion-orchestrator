@@ -116,8 +116,14 @@ func runBackgroundServices(env *environment.HostEnvironment, config *conf.Config
 	})
 
 	eg.Go(func() error {
+		healtchCheck := environment.NewServiceHealthCheck()
+		healtchCheck.Run()
+		return nil
+	})
+
+	eg.Go(func() error {
 		// TODO: Obtain ISD AS from config
-		renewer := ascrypto.NewCertificateRenewer(env.ConfigPath, "71-9999", 6)
+		renewer := ascrypto.NewCertificateRenewer(env.ConfigPath, config.IsdAs, 6)
 		renewer.Run()
 		return nil
 	})

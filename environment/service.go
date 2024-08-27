@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
+	"time"
 
 	"github.com/netsys-lab/scion-as/conf"
 	"github.com/netsys-lab/scion-as/pkg/metrics"
@@ -39,6 +40,29 @@ func GetBorderRouters() []*SystemService {
 		}
 	}
 	return services
+}
+
+type ServiceHealthCheck struct {
+}
+
+func NewServiceHealthCheck() *ServiceHealthCheck {
+	return &ServiceHealthCheck{}
+}
+
+func (s *ServiceHealthCheck) Run() {
+	log.Println("[Env] Starting Service Health Check")
+	for {
+		allServicesRunning := UpdateHealthCheck()
+		if allServicesRunning {
+			metrics.ASStatus.Status = metrics.SERVICE_STATUS_RUNNING
+		} else {
+			metrics.ASStatus.Status = metrics.SERVICE_STATUS_ERROR
+		}
+		metrics.ASStatus.LastUpdated = time.Now().Format(time.RFC3339)
+
+		// log.Println("[Env] Health Check: ", metrics.ASStatus)
+		time.Sleep(10 * time.Second)
+	}
 }
 
 func UpdateHealthCheck() bool {
@@ -241,7 +265,7 @@ func (s *SystemService) IsRunning() bool {
 	case "linux":
 		cmd := exec.Command("systemctl", "is-active", "--quiet", s.Name)
 		err := cmd.Run()
-		fmt.Println("Is running: ", err == nil)
+		// fmt.Println("Is running: ", err == nil)
 		if err != nil {
 			return false
 		}
@@ -367,9 +391,9 @@ WantedBy=multi-user.target
 	if err != nil {
 		return err
 	}
-	fmt.Println("unitFile: ", unitPath)
+	//fmt.Println("unitFile: ", unitPath)
 
-	fmt.Println("Daemon reload: ", unitPath)
+	//fmt.Println("Daemon reload: ", unitPath)
 	// Reload systemd and enable the service
 	cmd := exec.Command("systemctl", "daemon-reload")
 	err = cmd.Run()
@@ -377,7 +401,7 @@ WantedBy=multi-user.target
 		return err
 	}
 
-	fmt.Println("Enable: ", unitPath)
+	// fmt.Println("Enable: ", unitPath)
 	cmd = exec.Command("systemctl", "enable", serviceName)
 	err = cmd.Run()
 	if err != nil {

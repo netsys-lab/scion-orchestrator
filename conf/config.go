@@ -10,6 +10,7 @@ type Config struct {
 	Command   string
 	Bootstrap Bootstrap
 	Metrics   Metrics
+	IsdAs     string
 }
 
 type Bootstrap struct {
