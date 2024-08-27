@@ -101,7 +101,7 @@ func runStandalone(env *environment.HostEnvironment) error {
 func runStandaloneRouter(env environment.HostEnvironment, service conf.SCIONService) error {
 
 	tmpRouterFile := filepath.Join(env.TmpConfigPath, fmt.Sprintf("br%d-tmp.toml", service.Index))
-	err := fileops.CopyFile(tmpRouterFile, service.ConfigFile)
+	err := fileops.CopyFile(tmpRouterFile, filepath.Join(env.ConfigPath, service.ConfigFile))
 	if err != nil {
 		return err
 	}
@@ -123,7 +123,7 @@ func runStandaloneRouter(env environment.HostEnvironment, service conf.SCIONServ
 func runStandaloneControlService(env environment.HostEnvironment, service conf.SCIONService) error {
 
 	tmpControlFile := filepath.Join(env.TmpConfigPath, fmt.Sprintf("cs%d-tmp.toml", service.Index))
-	err := fileops.CopyFile(tmpControlFile, service.ConfigFile)
+	err := fileops.CopyFile(tmpControlFile, filepath.Join(env.ConfigPath, service.ConfigFile))
 	if err != nil {
 		return err
 	}
@@ -150,7 +150,7 @@ func runStandaloneControlService(env environment.HostEnvironment, service conf.S
 func runStandaloneDaemon(env environment.HostEnvironment, service conf.SCIONService) error {
 
 	tmpDaemonFile := filepath.Join(env.TmpConfigPath, "sciond-tmp.toml")
-	err := fileops.CopyFile(tmpDaemonFile, service.ConfigFile)
+	err := fileops.CopyFile(tmpDaemonFile, filepath.Join(env.ConfigPath, service.ConfigFile))
 	if err != nil {
 		return err
 	}
@@ -177,7 +177,7 @@ func runStandaloneDaemon(env environment.HostEnvironment, service conf.SCIONServ
 func runStandaloneDispatcher(env environment.HostEnvironment, service conf.SCIONService) error {
 
 	tmpDispatcherFile := filepath.Join(env.TmpConfigPath, "dispatcher-tmp.toml")
-	err := fileops.CopyFile(tmpDispatcherFile, service.ConfigFile)
+	err := fileops.CopyFile(tmpDispatcherFile, filepath.Join(env.ConfigPath, service.ConfigFile))
 	if err != nil {
 		return err
 	}
