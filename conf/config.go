@@ -11,6 +11,13 @@ type Config struct {
 	Bootstrap Bootstrap
 	Metrics   Metrics
 	IsdAs     string
+	Ca        CA
+}
+
+type CA struct {
+	CertValidityHours int
+	Clients           []string
+	Server            string
 }
 
 type Bootstrap struct {
@@ -29,6 +36,10 @@ func NewConfig() *Config {
 		},
 		Metrics: Metrics{
 			Server: "",
+		},
+		Ca: CA{
+			CertValidityHours: 72,
+			Server:            ":3000",
 		},
 	}
 }

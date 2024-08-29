@@ -1,4 +1,4 @@
-package ascrypto
+package scionca
 
 import (
 	"bytes"

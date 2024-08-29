@@ -7,6 +7,7 @@ import (
 	"os/signal"
 	"path/filepath"
 	"runtime"
+	"strings"
 	"syscall"
 
 	"github.com/jessevdk/go-flags"
@@ -14,10 +15,10 @@ import (
 
 	"github.com/netsys-lab/scion-as/conf"
 	"github.com/netsys-lab/scion-as/environment"
-	"github.com/netsys-lab/scion-as/pkg/ascrypto"
 	"github.com/netsys-lab/scion-as/pkg/bootstrap"
 	"github.com/netsys-lab/scion-as/pkg/fileops"
 	"github.com/netsys-lab/scion-as/pkg/metrics"
+	"github.com/netsys-lab/scion-as/pkg/scionca"
 )
 
 var opts struct {
@@ -159,6 +160,26 @@ func runBackgroundServices(env *environment.HostEnvironment, config *conf.Config
 		return metrics.RunStatusHTTPServer(config.Metrics.Server)
 	})
 
+	if config.Ca.Clients != nil && len(config.Ca.Clients) > 0 {
+		eg.Go(func() error {
+			// TODO: Only run if core AS
+			parts := strings.Split(config.IsdAs, "-")
+			ca := scionca.NewSCIONCertificateAuthority(env.ConfigPath, parts[0])
+			err := ca.LoadCA()
+			if err != nil {
+				return err
+			}
+
+			apiServer := scionca.NewCaApiServer(env.ConfigPath, &config.Ca, ca)
+			err = apiServer.LoadClientsAndSecrets()
+			if err != nil {
+				return err
+			}
+
+			return apiServer.Run()
+		})
+	}
+
 	eg.Go(func() error {
 		healtchCheck := environment.NewServiceHealthCheck()
 		healtchCheck.Run()
@@ -167,7 +188,7 @@ func runBackgroundServices(env *environment.HostEnvironment, config *conf.Config
 
 	eg.Go(func() error {
 		// TODO: Obtain ISD AS from config
-		renewer := ascrypto.NewCertificateRenewer(env.ConfigPath, config.IsdAs, 6)
+		renewer := scionca.NewCertificateRenewer(env.ConfigPath, config.IsdAs, 6)
 		renewer.Run()
 		return nil
 	})
