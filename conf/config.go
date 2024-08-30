@@ -1,6 +1,7 @@
 package conf
 
 import (
+	"log"
 	"os"
 
 	"github.com/pelletier/go-toml/v2"
@@ -10,7 +11,7 @@ type Config struct {
 	Command   string
 	Bootstrap Bootstrap
 	Metrics   Metrics
-	IsdAs     string
+	IsdAs     string `toml:"isd_as,omitempty"`
 	Ca        CA
 }
 
@@ -56,6 +57,8 @@ func LoadConfig(path string) (*Config, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	log.Println(c)
 
 	return c, nil
 }

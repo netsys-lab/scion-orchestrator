@@ -28,7 +28,7 @@ type CertificateRenewer struct {
 }
 
 func NewCertificateRenewer(configDir string, ISDAS string, renewBeforeHours int) *CertificateRenewer {
-
+	log.Println("[Renewer] Creating new certificate renewer, isdAS ", ISDAS)
 	cr := &CertificateRenewer{
 		RenewBeforeHours: renewBeforeHours,
 		ConfigDir:        configDir,
@@ -55,7 +55,7 @@ func (cr *CertificateRenewer) LoadCertificateFiles() error {
 	isd := strings.Split(cr.ISDAS, "-")[0]
 
 	trcDir := filepath.Join(cr.ConfigDir, "certs")
-	trcFiles, err := fileops.ListFilesByPrefixAndSuffix(trcDir, "ISD-"+isd, ".trc")
+	trcFiles, err := fileops.ListFilesByPrefixAndSuffix(trcDir, "ISD"+isd, ".trc")
 	if err != nil {
 		return err
 	}
