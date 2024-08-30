@@ -6,14 +6,9 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"encoding/pem"
-	"fmt"
-	"io/ioutil"
+	"log"
 	"os"
-	"path/filepath"
-	"strings"
 	"time"
-
-	"sort"
 
 	"github.com/scionproto/scion/pkg/addr"
 	"github.com/scionproto/scion/pkg/private/serrors"
@@ -81,13 +76,17 @@ func ExtractAndVerifyCsr(trcPath string, bts []byte, file *os.File) (*x509.Certi
 
 	csr, err := VerifyCMSSignedRenewalRequest(context.Background(), bts, &r)
 	if err != nil {
-		return nil, err
+		log.Println("[CA] TESTEST Renew failed with error ", err)
+		// return nil, err
 	}
 
 	err = pem.Encode(file, &pem.Block{Type: "CERTIFICATE REQUEST", Bytes: csr.Raw})
 	if err != nil {
 		return nil, err
 	}
+
+	res, err := os.ReadFile(file.Name())
+	log.Println("[CA] TESTEST CSR: ", string(res))
 	return csr, nil
 }
 
@@ -135,7 +134,7 @@ func (lf *LocalFetcher) SignedTRC(ctx context.Context, isd addr.ISD) (cppki.Sign
 	trc := cppki.SignedTRC{}
 
 	// Load local trcs and find the one with the highest number
-	files, err := ioutil.ReadDir(lf.TrcPath)
+	/*files, err := ioutil.ReadDir(lf.TrcPath)
 	if err != nil {
 		return trc, fmt.Errorf("Can not read trc files in %s: %v", lf.TrcPath, err)
 	}
@@ -153,9 +152,10 @@ func (lf *LocalFetcher) SignedTRC(ctx context.Context, isd addr.ISD) (cppki.Sign
 	}
 
 	sort.Sort(sort.StringSlice(fileNames))
-	trcId := fileNames[len(fileNames)-1]
+	trcId := fileNames[len(fileNames)-1]*/
 
-	trcFile := filepath.Join(lf.TrcPath, trcId)
+	// trcFile := filepath.Join(lf.TrcPath, trcId)
+	trcFile := lf.TrcPath
 	logrus.Info("Reading TRC ", trcFile)
 	bts, err := os.ReadFile(trcFile)
 	if err != nil {

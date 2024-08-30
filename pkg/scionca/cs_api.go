@@ -5,7 +5,6 @@ package scionca
 import (
 	"encoding/base64"
 	"encoding/json"
-	"encoding/pem"
 	"fmt"
 	"log"
 	"math/rand"
@@ -157,7 +156,7 @@ func (ar *CaApiServer) renewCert(wr http.ResponseWriter, req *http.Request) {
 	}
 
 	// Write csr to file in pem encoding
-	csrPem := pem.EncodeToMemory(&pem.Block{
+	/*csrPem := pem.EncodeToMemory(&pem.Block{
 
 		Type:  "CERTIFICATE REQUEST",
 		Bytes: bts,
@@ -174,7 +173,7 @@ func (ar *CaApiServer) renewCert(wr http.ResponseWriter, req *http.Request) {
 		log.Println("[CA] Renew failed with error ", err)
 		sendProblem(wr, "/ra/isds/{isdNumber}/ases/{asNumber}/certificates/renewal", "Internal Server Error", http.StatusInternalServerError)
 		return
-	}
+	}*/
 	/*stepCli := step.NewStepCliAdapter()*/
 
 	// certFile, err := os.CreateTemp("/tmp/", "*.crt")
@@ -199,7 +198,7 @@ func (ar *CaApiServer) renewCert(wr http.ResponseWriter, req *http.Request) {
 		}
 	}
 	log.Println("[CA] Got ISDAS ", isdAS)
-	err = ar.CA.IssueCertificateFromCSR(csrFileName, certFileName, isdNumber, asNumber)
+	err = ar.CA.IssueCertificateFromCSR(file.Name(), certFileName, isdNumber, asNumber)
 	if err != nil {
 		log.Println("[CA] Renew failed with error ", err)
 		sendProblem(wr, "/ra/isds/{isdNumber}/ases/{asNumber}/certificates/renewal", "Internal Server Error", http.StatusInternalServerError)

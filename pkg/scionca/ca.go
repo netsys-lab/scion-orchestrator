@@ -10,6 +10,7 @@ import (
 	"encoding/pem"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"math/big"
 	"os"
 	"path/filepath"
@@ -67,6 +68,7 @@ func (ca *SCIONCertificateAthority) LoadCA() error {
 }
 
 func (ca *SCIONCertificateAthority) IssueCertificateFromCSR(csrFile string, dstFile, isd string, as string) error {
+	log.Println("Issuing certificate from CSR, csrFile ", csrFile)
 	csrPEM, err := ioutil.ReadFile(csrFile)
 	if err != nil {
 		return fmt.Errorf("Failed to read CSR: %v\n", err)
@@ -137,7 +139,7 @@ func (ca *SCIONCertificateAthority) IssueCertificateFromCSR(csrFile string, dstF
 	fullChainPEM := append(leafCertPEM, pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: ca.CaCertificate.Raw})...)
 
 	// Save the full chain to a file
-	err = os.WriteFile("leaf_cert_full_chain_from_csr.pem", fullChainPEM, 0644)
+	err = os.WriteFile(dstFile, fullChainPEM, 0644)
 	if err != nil {
 		return fmt.Errorf("failed to write full chain certificate: %v", err)
 	}
