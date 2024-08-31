@@ -80,6 +80,16 @@ func main() {
 
 	if opts.Config != "" { // Run as a service
 		log.Println("[Main] Running as service")
+
+		if config.Mode == "endhost" {
+			log.Println("[Main] Running bootstrapper to fetch configuration...")
+			err = bootstrap.BootstrapFromAddress(env, config)
+			if err != nil {
+				log.Println("[Main] Failed to bootstrap host: ", err)
+				log.Fatal(err)
+			}
+		}
+
 		go func() {
 			err = runBackgroundServices(env, config)
 			if err != nil {
@@ -112,7 +122,7 @@ func main() {
 			log.Printf("[Signal] Caught signal %v", sig)
 			environment.KillAllChilds()
 		}()
-		err = runStandalone(env)
+		err = runStandalone(env, config)
 	} else if install {
 		log.Println("[Main] Installing as service")
 		err = runInstall(env, scionConfig)
@@ -149,49 +159,68 @@ func runShutdown(env *environment.HostEnvironment, config *conf.SCIONConfig) err
 
 func runBackgroundServices(env *environment.HostEnvironment, config *conf.Config) error {
 	log.Println("[Main] Running background services")
-
 	var eg errgroup.Group
 
-	eg.Go(func() error {
-		return bootstrap.RunBootstrapService(env.ConfigPath, config.Bootstrap.Server)
-	})
-
-	eg.Go(func() error {
-		return metrics.RunStatusHTTPServer(config.Metrics.Server)
-	})
-
-	if config.Ca.Clients != nil && len(config.Ca.Clients) > 0 {
+	if config.Mode == "endhost" {
 		eg.Go(func() error {
-			// TODO: Only run if core AS
-			parts := strings.Split(config.IsdAs, "-")
-			ca := scionca.NewSCIONCertificateAuthority(env.ConfigPath, parts[0])
-			err := ca.LoadCA()
-			if err != nil {
-				return err
-			}
-
-			apiServer := scionca.NewCaApiServer(env.ConfigPath, &config.Ca, ca)
-			err = apiServer.LoadClientsAndSecrets()
-			if err != nil {
-				return err
-			}
-
-			return apiServer.Run()
+			return metrics.RunStatusHTTPServer(config.Metrics.Server)
 		})
+
+		eg.Go(func() error {
+			healtchCheck := environment.NewServiceHealthCheck()
+			healtchCheck.Run()
+			return nil
+		})
+
+		eg.Go(func() error {
+			// TODO: Obtain ISD AS from config
+			renewer := scionca.NewCertificateRenewer(env.ConfigPath, config.IsdAs, 6)
+			renewer.Run()
+			return nil
+		})
+	} else {
+		eg.Go(func() error {
+			return bootstrap.RunBootstrapService(env.ConfigPath, config.Bootstrap.Server)
+		})
+
+		eg.Go(func() error {
+			return metrics.RunStatusHTTPServer(config.Metrics.Server)
+		})
+
+		if config.Ca.Clients != nil && len(config.Ca.Clients) > 0 {
+			eg.Go(func() error {
+				// TODO: Only run if core AS
+				parts := strings.Split(config.IsdAs, "-")
+				ca := scionca.NewSCIONCertificateAuthority(env.ConfigPath, parts[0])
+				err := ca.LoadCA()
+				if err != nil {
+					return err
+				}
+
+				apiServer := scionca.NewCaApiServer(env.ConfigPath, &config.Ca, ca)
+				err = apiServer.LoadClientsAndSecrets()
+				if err != nil {
+					return err
+				}
+
+				return apiServer.Run()
+			})
+		}
+
+		eg.Go(func() error {
+			healtchCheck := environment.NewServiceHealthCheck()
+			healtchCheck.Run()
+			return nil
+		})
+
+		eg.Go(func() error {
+			// TODO: Obtain ISD AS from config
+			renewer := scionca.NewCertificateRenewer(env.ConfigPath, config.IsdAs, 6)
+			renewer.Run()
+			return nil
+		})
+
 	}
-
-	eg.Go(func() error {
-		healtchCheck := environment.NewServiceHealthCheck()
-		healtchCheck.Run()
-		return nil
-	})
-
-	eg.Go(func() error {
-		// TODO: Obtain ISD AS from config
-		renewer := scionca.NewCertificateRenewer(env.ConfigPath, config.IsdAs, 6)
-		renewer.Run()
-		return nil
-	})
 
 	return eg.Wait()
 }
@@ -199,5 +228,6 @@ func runBackgroundServices(env *environment.HostEnvironment, config *conf.Config
 func runService(env *environment.HostEnvironment, config *conf.Config) error {
 	//log.Println("[Main] Running service")
 	//time.Sleep(30 * time.Second)
+
 	return nil
 }

@@ -9,6 +9,11 @@ import (
 func ListFilesByPrefixAndSuffix(root string, prefix string, suffix string) ([]string, error) {
 	var files []string
 	err := filepath.WalkDir(root, func(path string, d fs.DirEntry, err error) error {
+
+		if d == nil {
+			return nil
+		}
+
 		if d.IsDir() {
 			return nil
 		}

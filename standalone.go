@@ -10,11 +10,12 @@ import (
 
 	"github.com/netsys-lab/scion-as/conf"
 	"github.com/netsys-lab/scion-as/environment"
+	"github.com/netsys-lab/scion-as/pkg/bootstrap"
 	"github.com/netsys-lab/scion-as/pkg/fileops"
 	"golang.org/x/sync/errgroup"
 )
 
-func runStandalone(env *environment.HostEnvironment) error {
+func runStandalone(env *environment.HostEnvironment, config *conf.Config) error {
 
 	// log.Println("[Main] Running standalone")
 	env.ChangeToStandalone()
@@ -32,6 +33,15 @@ func runStandalone(env *environment.HostEnvironment) error {
 	err = os.MkdirAll(env.TmpConfigPath, 0777)
 	if err != nil {
 		return err
+	}
+
+	if config.Mode == "endhost" {
+		log.Println("[Main] Running bootstrapper to fetch configuration...")
+		err = bootstrap.BootstrapFromAddress(env, config)
+		if err != nil {
+			log.Println("[Main] Failed to bootstrap host: ", err)
+			log.Fatal(err)
+		}
 	}
 
 	eg := errgroup.Group{}

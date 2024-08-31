@@ -21,3 +21,5 @@ environment/windowsx64/dispatcher.exe
 dev/
 scion-as
 config/
+bin_latest/
+config_latest/

@@ -27,19 +27,23 @@ func RunBootstrapServer(configDir string, url string) error {
 		//	r.UserAgent(), r.Header.Get("X-Forwarded-For"))
 
 		if strings.HasPrefix(r.URL.Path, "/topology") {
-			http.ServeFile(w, r, filepath.Join(configDir, "/topology.json"))
+			log.Println("[Bootstrap Server] Serving topology.json: ", filepath.Join(configDir, "topology.json"))
+			http.ServeFile(w, r, filepath.Join(configDir, "topology.json"))
 		} else if strings.HasPrefix(r.URL.Path, "/trcs") {
 			if match, _ := regexp.MatchString(`^/trcs/isd\d+-b\d+-s\d+$`, r.URL.Path); match {
 				isd, base, serial := parseISDBSerial(r.URL.Path)
 				trc := fmt.Sprintf("isd%s-b%s-s%s.json", isd, base, serial)
-				trcFile := filepath.Join(configDir, trc)
+				trcFile := filepath.Join(configDir, "certs", trc)
+				log.Println("[Bootstrap Server] Serving TRC file: ", trcFile)
 				http.ServeFile(w, r, trcFile)
 			} else if match, _ := regexp.MatchString(`^/trcs/isd\d+-b\d+-s\d+/blob$`, r.URL.Path); match {
 				isd, base, serial := parseISDBSerialBlob(r.URL.Path)
 				trc := fmt.Sprintf("ISD%s-B%s-S%s.trc", isd, base, serial)
-				trcFile := filepath.Join(configDir, trc)
+				trcFile := filepath.Join(configDir, "certs", trc)
+				log.Println("[Bootstrap Server] Serving TRC file blob: ", trcFile)
 				http.ServeFile(w, r, trcFile)
 			} else {
+				log.Println("[Bootstrap Server] Serving trcs.json: ", filepath.Join(configDir, "trcs.json"))
 				http.ServeFile(w, r, filepath.Join(configDir, "trcs.json"))
 			}
 		} else {

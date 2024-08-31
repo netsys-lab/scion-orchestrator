@@ -15,6 +15,21 @@ services:
       net_150_net0:
         ipv4_address: 10.150.0.254
 
+  hnode_150:
+    image: ubuntu:22.10
+    container_name: host150full
+    command: [ "sleep", "infinity" ]
+    # command: [ "bash", "/root/AS150/run.sh" ]
+    cap_add:
+      - ALL
+    privileged: true
+    volumes:
+      - "./Host150:/root/Host150"
+      - "./scion-as:/root/Host150/scion-as"
+    networks:
+      net_150_net0:
+        ipv4_address: 10.150.0.252
+
   rnode_151_br0:
     image: ubuntu:22.10
     container_name: as151full

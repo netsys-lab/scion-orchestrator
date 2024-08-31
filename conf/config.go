@@ -9,6 +9,7 @@ import (
 
 type Config struct {
 	Command   string
+	Mode      string
 	Bootstrap Bootstrap
 	Metrics   Metrics
 	IsdAs     string `toml:"isd_as,omitempty"`
