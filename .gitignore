@@ -20,6 +20,21 @@ environment/windowsx64/dispatcher.exe
 
 dev/
 scion-as
-config/
+integration/AS150/bin/
+integration/AS150/config/tmp/
+integration/AS150/config/logs/
+integration/AS150/config/database/
+
+integration/AS151/bin/
+integration/AS151/config/tmp/
+integration/AS151/config/logs/
+integration/AS151/config/database/
+
+integration/Host150/bin/
+integration/Host150/config/tmp/
+integration/Host150/config/logs/
+integration/Host150/config/database/
+integration/Host150/config/certs/
+
 bin_latest/
 config_latest/
