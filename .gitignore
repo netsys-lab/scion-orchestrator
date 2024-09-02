@@ -20,6 +20,7 @@ environment/windowsx64/dispatcher.exe
 
 dev/
 scion-as
+integration/bin/
 integration/AS150/bin/
 integration/AS150/config/tmp/
 integration/AS150/config/logs/

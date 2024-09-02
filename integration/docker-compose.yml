@@ -3,14 +3,15 @@ services:
   rnode_150_br0:
     image: ubuntu:22.10
     container_name: as150full
-    command: [ "sleep", "infinity" ]
-    # command: [ "bash", "/root/AS150/run.sh" ]
+    # command: [ "sleep", "infinity" ]
+    command: [ "bash", "/root/AS150/run.sh" ]
     cap_add:
       - ALL
     privileged: true
     volumes:
       - "./AS150:/root/AS150"
       - "./scion-as:/root/AS150/scion-as"
+      - "./bin/:/root/AS150/bin"
     networks:
       net_150_net0:
         ipv4_address: 10.150.0.254
@@ -18,14 +19,15 @@ services:
   hnode_150:
     image: ubuntu:22.10
     container_name: host150full
-    command: [ "sleep", "infinity" ]
-    # command: [ "bash", "/root/AS150/run.sh" ]
+    # command: [ "sleep", "infinity" ]
+    command: [ "bash", "/root/Host150/run.sh" ]
     cap_add:
       - ALL
     privileged: true
     volumes:
       - "./Host150:/root/Host150"
       - "./scion-as:/root/Host150/scion-as"
+      - "./bin/:/root/Host150/bin"
     networks:
       net_150_net0:
         ipv4_address: 10.150.0.252
@@ -33,12 +35,13 @@ services:
   rnode_151_br0:
     image: ubuntu:22.10
     container_name: as151full
-    command: [ "sleep", "infinity" ]
-    # command: [ "bash", "/root/AS151/run.sh" ]
+    # command: [ "sleep", "infinity" ]
+    command: [ "bash", "/root/AS151/run.sh" ]
     privileged: true
     volumes:
       - "./AS151:/root/AS151"
       - "./scion-as:/root/AS151/scion-as"
+      - "./bin/:/root/AS151/bin"
     networks:
       net_150_net0:
         ipv4_address: 10.150.0.251

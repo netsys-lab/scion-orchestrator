@@ -55,3 +55,13 @@ server = "127.0.0.1:33401"
 [bootstrap]
 server = "10.150.0.254:8041"
 ```
+
+## Integration Testing
+At first, build the `scion-as` tool and copy the binary into the `integration` folder.
+```sh 
+go build && cp scion-as ./integration
+```
+
+Then download the latest SCION binary release from [github](https://github.com/scionproto/scion/releases/tag/v0.11.0) and copy all binaries into `integration/bin/`.
+
+Then run `docker compose up -d` to start the ASes `150` and `151` and the endhost in `150`.
