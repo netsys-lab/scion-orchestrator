@@ -1,0 +1,25 @@
+[beacon_db]
+connection = "{databaseDir}cs-1.beacon.db"
+
+[beaconing]
+origination_interval = "5s"
+propagation_interval = "5s"
+
+[general]
+id = "cs-1"
+config_dir = "{configDir}"
+
+[metrics]
+prometheus = "127.0.0.1:30454"
+
+[path_db]
+connection = "{databaseDir}cs-1.path.db"
+
+[trust_db]
+connection = "{databaseDir}cs-1.trust.db"
+
+[log.console]
+level = "debug"
+
+[api]
+addr = "10.150.0.251:30554"

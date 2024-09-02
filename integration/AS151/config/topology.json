@@ -1,0 +1,31 @@
+{
+  "attributes": [],
+  "isd_as": "1-151",
+  "mtu": 1500,
+  "control_service": {
+    "cs-1": {
+      "addr": "10.150.0.251:30254"
+    }
+  },
+  "discovery_service": {
+    "cs-1": {
+      "addr": "10.150.0.251:30254"
+    }
+  },
+  "border_routers": {
+    "br-1": {
+      "internal_addr": "10.150.0.251:30001",
+      "interfaces": {
+        "1": {
+          "underlay": {
+            "public": "10.150.0.251:50000",
+            "remote": "10.150.0.254:50000"
+          },
+          "isd_as": "1-150",
+          "link_to": "PARENT",
+          "mtu": 1500
+        }
+      }
+    }
+  }
+}
