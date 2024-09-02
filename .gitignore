@@ -35,6 +35,7 @@ integration/Host150/bin/
 integration/Host150/config/tmp/
 integration/Host150/config/logs/
 integration/Host150/config/database/
+integration/Host150/config/topology.json
 integration/Host150/config/certs/
 
 bin_latest/
