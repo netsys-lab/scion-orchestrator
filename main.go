@@ -208,7 +208,7 @@ func runBackgroundServices(env *environment.HostEnvironment, config *conf.Config
 			eg.Go(func() error {
 				// TODO: Only run if core AS
 				parts := strings.Split(config.IsdAs, "-")
-				ca := scionca.NewSCIONCertificateAuthority(env.ConfigPath, parts[0])
+				ca := scionca.NewSCIONCertificateAuthority(env.ConfigPath, parts[0], config.Ca.CertValidityHours)
 				err := ca.LoadCA()
 				if err != nil {
 					return err

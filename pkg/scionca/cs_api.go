@@ -43,10 +43,10 @@ type CaApiServer struct {
 	CaConfig  *conf.CA
 	Router    http.Handler
 	Clients   []CaClient
-	CA        *SCIONCertificateAthority
+	CA        *SCIONCertificateAuthority
 }
 
-func NewCaApiServer(configDir string, caConfig *conf.CA, ca *SCIONCertificateAthority) *CaApiServer {
+func NewCaApiServer(configDir string, caConfig *conf.CA, ca *SCIONCertificateAuthority) *CaApiServer {
 	r := chi.NewRouter()
 
 	ar := &CaApiServer{

@@ -19,22 +19,24 @@ import (
 	"github.com/netsys-lab/scion-as/pkg/fileops"
 )
 
-type SCIONCertificateAthority struct {
-	ConfigDir     string
-	CaCertificate *x509.Certificate
-	CaPrivateKey  *ecdsa.PrivateKey
-	ISD           string
+type SCIONCertificateAuthority struct {
+	ConfigDir         string
+	CaCertificate     *x509.Certificate
+	CaPrivateKey      *ecdsa.PrivateKey
+	ISD               string
+	CertValidityHours int
 }
 
-func NewSCIONCertificateAuthority(configDir string, isd string) *SCIONCertificateAthority {
+func NewSCIONCertificateAuthority(configDir string, isd string, certValidityHours int) *SCIONCertificateAuthority {
 
-	return &SCIONCertificateAthority{
-		ConfigDir: configDir,
-		ISD:       isd,
+	return &SCIONCertificateAuthority{
+		ConfigDir:         configDir,
+		ISD:               isd,
+		CertValidityHours: certValidityHours,
 	}
 }
 
-func (ca *SCIONCertificateAthority) LoadCA() error {
+func (ca *SCIONCertificateAuthority) LoadCA() error {
 	// Load CA certificate and private key
 
 	caDir := filepath.Join(ca.ConfigDir, "crypto", "ca")
@@ -67,7 +69,7 @@ func (ca *SCIONCertificateAthority) LoadCA() error {
 	return nil
 }
 
-func (ca *SCIONCertificateAthority) IssueCertificateFromCSR(csrFile string, dstFile, isd string, as string) error {
+func (ca *SCIONCertificateAuthority) IssueCertificateFromCSR(csrFile string, dstFile, isd string, as string) error {
 	log.Println("Issuing certificate from CSR, csrFile ", csrFile)
 	csrPEM, err := ioutil.ReadFile(csrFile)
 	if err != nil {
@@ -117,7 +119,7 @@ func (ca *SCIONCertificateAthority) IssueCertificateFromCSR(csrFile string, dstF
 			},
 		},
 		NotBefore:    time.Now(),
-		NotAfter:     time.Now().AddDate(1, 0, 0), // Valid for 1 year
+		NotAfter:     time.Now().AddDate(0, 0, ca.CertValidityHours), // Valid for X hours (default 72)
 		KeyUsage:     x509.KeyUsageDigitalSignature,
 		ExtKeyUsage:  []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth, x509.ExtKeyUsageClientAuth, x509.ExtKeyUsageTimeStamping},
 		SubjectKeyId: subjectKeyID[:],

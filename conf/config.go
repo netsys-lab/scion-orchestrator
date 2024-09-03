@@ -17,7 +17,7 @@ type Config struct {
 }
 
 type CA struct {
-	CertValidityHours int
+	CertValidityHours int `toml:"cert_validity_hours,omitempty"`
 	Clients           []string
 	Server            string
 }
@@ -42,6 +42,7 @@ func NewConfig() *Config {
 		Ca: CA{
 			CertValidityHours: 72,
 			Server:            ":3000",
+			Clients:           []string{},
 		},
 	}
 }
