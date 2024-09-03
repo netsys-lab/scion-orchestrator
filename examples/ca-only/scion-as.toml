@@ -1,0 +1,16 @@
+command = "service"
+isd_as = "1-150"
+mode = "as"
+
+
+[ca]
+server = ":3000"
+clients = ["123:client1.secret"] # Starts from configDir
+cert_validity_hours = 8760
+
+# Disable all other services
+[service_config]
+disable_daemon = true
+disable_dispatcher = true
+disable_bootstrap_server = true
+disable_cert_renewal = true

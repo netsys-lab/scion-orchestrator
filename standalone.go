@@ -35,6 +35,8 @@ func runStandalone(env *environment.HostEnvironment, config *conf.Config) error 
 		return err
 	}
 
+	serviceCount := 0
+
 	if config.Mode == "endhost" {
 		log.Println("[Main] Running bootstrapper to fetch configuration...")
 		err = bootstrap.BootstrapFromAddress(env, config)
@@ -46,7 +48,8 @@ func runStandalone(env *environment.HostEnvironment, config *conf.Config) error 
 
 	eg := errgroup.Group{}
 
-	if scionConfig.Dispatcher != nil {
+	if scionConfig.Dispatcher != nil && !config.ServiceConfig.DisableDispatcher {
+		serviceCount++
 		eg.Go(func() error {
 			log.Println("[Main] Running scion dispatcher")
 			err := runStandaloneDispatcher(*env, *scionConfig.Dispatcher)
@@ -60,17 +63,21 @@ func runStandalone(env *environment.HostEnvironment, config *conf.Config) error 
 		time.Sleep(2 * time.Second)
 	}
 
-	eg.Go(func() error {
-		log.Println("[Main] Running scion daemon")
-		err := runStandaloneDaemon(*env, scionConfig.Daemon)
-		if err != nil {
-			log.Println("[Main] Error running daemon: ", err)
-			return err
-		}
-		return nil
-	})
+	if !config.ServiceConfig.DisableDaemon {
+		serviceCount++
+		eg.Go(func() error {
+			log.Println("[Main] Running scion daemon")
+			err := runStandaloneDaemon(*env, scionConfig.Daemon)
+			if err != nil {
+				log.Println("[Main] Error running daemon: ", err)
+				return err
+			}
+			return nil
+		})
+	}
 
 	for _, service := range scionConfig.BorderRouters {
+		serviceCount++
 		func(service conf.SCIONService) {
 			eg.Go(func() error {
 				log.Println("[Main] Running router: ", service.Name)
@@ -85,6 +92,7 @@ func runStandalone(env *environment.HostEnvironment, config *conf.Config) error 
 	}
 
 	for _, service := range scionConfig.ControlServices {
+		serviceCount++
 		func(service conf.SCIONService) {
 			eg.Go(func() error {
 				log.Println("[Main] Running control: ", service.Name)
@@ -98,8 +106,17 @@ func runStandalone(env *environment.HostEnvironment, config *conf.Config) error 
 		}(service)
 	}
 
+	if serviceCount == 0 {
+		log.Println("[Main] No main services to run, keeping app alive to run background services")
+		eg.Go(func() error {
+			// Wait forever
+			select {}
+		})
+	}
+
 	log.Println("[Main] Waiting for shutdown...")
 	err = eg.Wait()
+
 	if err != nil {
 		environment.KillAllChilds()
 		log.Fatal(err)

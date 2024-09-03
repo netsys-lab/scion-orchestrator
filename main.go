@@ -100,7 +100,7 @@ func main() {
 			}
 		}
 
-		err := environment.LoadServices(env, scionConfig)
+		err := environment.LoadServices(env, scionConfig, config)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -136,14 +136,15 @@ func main() {
 			sig := <-cancelChan
 			log.Printf("[Signal] Caught signal %v", sig)
 			environment.KillAllChilds()
+			log.Fatal("[Main] Shutting down...")
 		}()
 		err = runStandalone(env, config)
 	} else if install {
 		log.Println("[Main] Installing as service")
-		err = runInstall(env, scionConfig)
+		err = runInstall(env, scionConfig, config)
 	} else if shutdown {
 		// log.Println("[Main] Shutting down all service")
-		err = runShutdown(env, scionConfig)
+		err = runShutdown(env, scionConfig, *config)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -157,9 +158,9 @@ func main() {
 	}
 }
 
-func runShutdown(env *environment.HostEnvironment, config *conf.SCIONConfig) error {
+func runShutdown(env *environment.HostEnvironment, config *conf.SCIONConfig, asConfig conf.Config) error {
 	log.Println("[Main] Shutting down SCION AS")
-	err := environment.LoadServices(env, config)
+	err := environment.LoadServices(env, config, &asConfig)
 	if err != nil {
 		return err
 	}
@@ -187,16 +188,20 @@ func runBackgroundServices(env *environment.HostEnvironment, config *conf.Config
 			return nil
 		})
 
-		eg.Go(func() error {
-			// TODO: Obtain ISD AS from config
-			renewer := scionca.NewCertificateRenewer(env.ConfigPath, config.IsdAs, 6)
-			renewer.Run()
-			return nil
-		})
+		if !config.ServiceConfig.DisableCertRenewal {
+			eg.Go(func() error {
+				// TODO: Obtain ISD AS from config
+				renewer := scionca.NewCertificateRenewer(env.ConfigPath, config.IsdAs, 6)
+				renewer.Run()
+				return nil
+			})
+		}
 	} else {
-		eg.Go(func() error {
-			return bootstrap.RunBootstrapService(env.ConfigPath, config.Bootstrap.Server)
-		})
+		if !config.ServiceConfig.DisableBootstrapServer {
+			eg.Go(func() error {
+				return bootstrap.RunBootstrapService(env.ConfigPath, config.Bootstrap.Server)
+			})
+		}
 
 		eg.Go(func() error {
 			return metrics.RunStatusHTTPServer(config.Metrics.Server)
@@ -230,13 +235,13 @@ func runBackgroundServices(env *environment.HostEnvironment, config *conf.Config
 			return nil
 		})
 
-		eg.Go(func() error {
-			// TODO: Obtain ISD AS from config
-			renewer := scionca.NewCertificateRenewer(env.ConfigPath, config.IsdAs, 6)
-			renewer.Run()
-			return nil
-		})
-
+		if !config.ServiceConfig.DisableCertRenewal {
+			eg.Go(func() error {
+				renewer := scionca.NewCertificateRenewer(env.ConfigPath, config.IsdAs, 6)
+				renewer.Run()
+				return nil
+			})
+		}
 	}
 
 	return eg.Wait()

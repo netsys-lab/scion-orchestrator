@@ -8,12 +8,13 @@ import (
 )
 
 type Config struct {
-	Command   string
-	Mode      string
-	Bootstrap Bootstrap
-	Metrics   Metrics
-	IsdAs     string `toml:"isd_as,omitempty"`
-	Ca        CA
+	Command       string
+	Mode          string
+	Bootstrap     Bootstrap `toml:"bootstrap,omitempty"`
+	Metrics       Metrics
+	IsdAs         string        `toml:"isd_as,omitempty"`
+	Ca            CA            `toml:"ca,omitempty"`
+	ServiceConfig ServiceConfig `toml:"service_config,omitempty"`
 }
 
 type CA struct {
@@ -24,6 +25,13 @@ type CA struct {
 
 type Bootstrap struct {
 	Server string
+}
+
+type ServiceConfig struct {
+	DisableDaemon          bool `toml:"disable_daemon,omitempty"`
+	DisableDispatcher      bool `toml:"disable_dispatcher,omitempty"`
+	DisableBootstrapServer bool `toml:"disable_bootstrap_server,omitempty"`
+	DisableCertRenewal     bool `toml:"disable_cert_renewal,omitempty"`
 }
 
 type Metrics struct {
@@ -44,6 +52,7 @@ func NewConfig() *Config {
 			Server:            ":3000",
 			Clients:           []string{},
 		},
+		ServiceConfig: ServiceConfig{},
 	}
 }
 

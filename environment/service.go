@@ -146,7 +146,7 @@ func UpdateHealthCheck() bool {
 	return allServicesRunning
 }
 
-func LoadServices(env *HostEnvironment, config *conf.SCIONConfig) error {
+func LoadServices(env *HostEnvironment, config *conf.SCIONConfig, asConfig *conf.Config) error {
 
 	binPath := "/usr/bin/"
 
@@ -156,7 +156,7 @@ func LoadServices(env *HostEnvironment, config *conf.SCIONConfig) error {
 		break
 	}
 
-	if config.Dispatcher != nil {
+	if config.Dispatcher != nil && !asConfig.ServiceConfig.DisableDispatcher {
 		service := &SystemService{
 			Name:       config.Dispatcher.Name,
 			BinaryPath: filepath.Join(binPath, "dispatcher"),
@@ -167,14 +167,17 @@ func LoadServices(env *HostEnvironment, config *conf.SCIONConfig) error {
 		log.Println("[Env] Loaded Dispatcher Service")
 	}
 
-	service := &SystemService{
-		Name:       config.Daemon.Name,
-		BinaryPath: filepath.Join(binPath, "daemon"),
-		ConfigPath: filepath.Join(env.ConfigPath, config.Daemon.ConfigFile),
-	}
+	if !asConfig.ServiceConfig.DisableDaemon {
 
-	Services[config.Daemon.Name] = service
-	log.Println("[Env] Loaded Daemon Service")
+		service := &SystemService{
+			Name:       config.Daemon.Name,
+			BinaryPath: filepath.Join(binPath, "daemon"),
+			ConfigPath: filepath.Join(env.ConfigPath, config.Daemon.ConfigFile),
+		}
+
+		Services[config.Daemon.Name] = service
+		log.Println("[Env] Loaded Daemon Service")
+	}
 
 	for _, service := range config.ControlServices {
 		service := &SystemService{
@@ -198,7 +201,7 @@ func LoadServices(env *HostEnvironment, config *conf.SCIONConfig) error {
 		log.Println("[Env] Loaded Border Router Service: ", service.Name)
 	}
 
-	service = &SystemService{
+	service := &SystemService{
 		Name:       "scion-as",
 		BinaryPath: filepath.Join(binPath, "scion-as"),
 		ConfigPath: filepath.Join(env.ConfigPath, "scion-as.toml"),

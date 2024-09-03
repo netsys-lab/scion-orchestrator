@@ -11,7 +11,7 @@ import (
 	"github.com/netsys-lab/scion-as/pkg/metrics"
 )
 
-func runInstall(env *environment.HostEnvironment, config *conf.SCIONConfig) error {
+func runInstall(env *environment.HostEnvironment, config *conf.SCIONConfig, asConfig *conf.Config) error {
 
 	// TODO: Binary copy does not work when services are running
 
@@ -22,7 +22,7 @@ func runInstall(env *environment.HostEnvironment, config *conf.SCIONConfig) erro
 		return err
 	}
 
-	err = environment.LoadServices(env, config)
+	err = environment.LoadServices(env, config, asConfig)
 	if err != nil {
 		return err
 	}
@@ -39,7 +39,7 @@ func runInstall(env *environment.HostEnvironment, config *conf.SCIONConfig) erro
 		return err
 	}
 
-	if config.Dispatcher != nil {
+	if config.Dispatcher != nil && !asConfig.ServiceConfig.DisableDispatcher {
 		log.Println("[Install] Installing Dispatcher Service...")
 		service, ok := environment.Services[config.Dispatcher.Name]
 		if !ok {
@@ -54,18 +54,21 @@ func runInstall(env *environment.HostEnvironment, config *conf.SCIONConfig) erro
 		log.Println("[Install] Installed Dispatcher Service")
 	}
 
-	log.Println("[Install] Installing Daemon Service...")
-	service, ok := environment.Services[config.Daemon.Name]
-	if !ok {
-		log.Println("[Install] Dispatcher Service not found in environment, name mismatch...")
-		return fmt.Errorf("Daemon Service not found in environment, name mismatch...")
-	}
+	if !asConfig.ServiceConfig.DisableDaemon {
 
-	err = service.Install()
-	if err != nil {
-		return err
+		log.Println("[Install] Installing Daemon Service...")
+		service, ok := environment.Services[config.Daemon.Name]
+		if !ok {
+			log.Println("[Install] Dispatcher Service not found in environment, name mismatch...")
+			return fmt.Errorf("Daemon Service not found in environment, name mismatch...")
+		}
+
+		err = service.Install()
+		if err != nil {
+			return err
+		}
+		log.Println("[Install] Installed Daemon Service")
 	}
-	log.Println("[Install] Installed Daemon Service")
 
 	controlServices := environment.GetControlServices()
 	for _, service := range controlServices {
@@ -89,7 +92,7 @@ func runInstall(env *environment.HostEnvironment, config *conf.SCIONConfig) erro
 	}
 
 	log.Println("[Install] Installing SCION-AS Service")
-	service, ok = environment.Services["scion-as"]
+	service, ok := environment.Services["scion-as"]
 	if !ok {
 		log.Println("[Install] SCION AS Service not found in environment, name mismatch...")
 		return fmt.Errorf("SCION AS Service not found in environment, name mismatch...")

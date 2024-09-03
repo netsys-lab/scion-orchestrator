@@ -57,7 +57,15 @@ func (endhostEnv *HostEnvironment) installBinaries() error {
 			return err
 		}
 
-		binaries := []string{"scion", "control", "router", "dispatcher", "gateway", "daemon"}
+		files, err := fileops.ListFilesByPrefixAndSuffix(filepath.Join(workDir, "bin"), "", "")
+		if err != nil {
+			return err
+		}
+		binaries := []string{}
+		for _, file := range files {
+			binaries = append(binaries, filepath.Base(file))
+		}
+		// binaries := []string{"scion", "control", "router", "dispatcher", "gateway", "daemon"}
 		for _, binary := range binaries {
 			log.Println("[Install] Copy binary ", filepath.Join(workDir, "bin", binary), "to ", filepath.Join("/usr/bin", binary))
 			err = fileops.CopyFile(filepath.Join("/usr/bin", binary), filepath.Join(workDir, "bin", binary))

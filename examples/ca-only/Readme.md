@@ -1,0 +1,3 @@
+# Run scion-as as standalone CA
+
+tbd...

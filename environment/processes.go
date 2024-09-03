@@ -9,16 +9,20 @@ import (
 var processes []*exec.Cmd
 var killInitiated bool
 
-func KillAllChilds() {
+func KillAllChilds() bool {
 	if killInitiated {
-		return
+		return true
 	}
 	killInitiated = true
 	log.Println("[Signal] Killing all child processes")
+	processesKilled := false
 	for _, p := range processes {
 		// TODO: Not implemented on Windows...
 		p.Process.Signal(syscall.SIGTERM)
+		processesKilled = true
 	}
+
+	return processesKilled
 }
 
 func init() {
