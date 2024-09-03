@@ -59,7 +59,17 @@ func main() {
 
 	if fileops.FileOrFolderExists("config") {
 		// log.Println("[Main] Config folder exists")
-		scionConfig, err = conf.LoadSCIONConfig()
+		scionConfig, err = conf.LoadSCIONConfig("")
+		if err != nil {
+			log.Println("[Main] Error loading scion config: ", err)
+			log.Fatal(err)
+		}
+		// log.Println("[Main] Config loaded")
+		log.Println(scionConfig.Log())
+	} else {
+		// Get base path
+		scionConfigDir := filepath.Dir(opts.Config)
+		scionConfig, err = conf.LoadSCIONConfig(scionConfigDir)
 		if err != nil {
 			log.Println("[Main] Error loading scion config: ", err)
 			log.Fatal(err)
@@ -88,6 +98,11 @@ func main() {
 				log.Println("[Main] Failed to bootstrap host: ", err)
 				log.Fatal(err)
 			}
+		}
+
+		err := environment.LoadServices(env, scionConfig)
+		if err != nil {
+			log.Fatal(err)
 		}
 
 		go func() {
@@ -187,6 +202,8 @@ func runBackgroundServices(env *environment.HostEnvironment, config *conf.Config
 			return metrics.RunStatusHTTPServer(config.Metrics.Server)
 		})
 
+		log.Println("[Main] Running background services for CA")
+		log.Println(config.Ca.Clients)
 		if config.Ca.Clients != nil && len(config.Ca.Clients) > 0 {
 			eg.Go(func() error {
 				// TODO: Only run if core AS

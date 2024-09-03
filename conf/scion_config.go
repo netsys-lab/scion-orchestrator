@@ -2,6 +2,7 @@ package conf
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"path/filepath"
 
@@ -23,17 +24,23 @@ type SCIONConfig struct {
 	Daemon          SCIONService
 }
 
-func NewSCIONConfig() *SCIONConfig {
-	wd, _ := os.Getwd()
+func NewSCIONConfigFromPath(folder string) *SCIONConfig {
 	return &SCIONConfig{
-		Folder:          filepath.Join(wd, "config"),
+		Folder:          folder,
 		ControlServices: []SCIONService{},
 		BorderRouters:   []SCIONService{},
 	}
 }
 
-func LoadSCIONConfig() (*SCIONConfig, error) {
-	c := NewSCIONConfig()
+func LoadSCIONConfig(path string) (*SCIONConfig, error) {
+	wd, _ := os.Getwd()
+	if path != "" {
+		wd = path
+	} else {
+		wd = filepath.Join(wd, "config")
+	}
+	log.Println("[SCIONConfig] Loading SCION Config from ", wd)
+	c := NewSCIONConfigFromPath(wd)
 
 	// Get all files in c.Folder that start with cs- and end with .toml
 	controlConfigFiles, err := fileops.ListFilesByPrefixAndSuffix(c.Folder, "cs-", ".toml")

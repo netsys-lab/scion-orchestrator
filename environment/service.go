@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/netsys-lab/scion-as/conf"
+	"github.com/netsys-lab/scion-as/pkg/fileops"
 	"github.com/netsys-lab/scion-as/pkg/metrics"
 )
 
@@ -66,6 +67,7 @@ func (s *ServiceHealthCheck) Run() {
 }
 
 func UpdateHealthCheck() bool {
+	log.Println("[Env] Updating Health Check for services: ", len(Services))
 	allServicesRunning := true
 	for _, service := range Services {
 		if strings.Contains(service.BinaryPath, "control") {
@@ -199,7 +201,7 @@ func LoadServices(env *HostEnvironment, config *conf.SCIONConfig) error {
 	service = &SystemService{
 		Name:       "scion-as",
 		BinaryPath: filepath.Join(binPath, "scion-as"),
-		ConfigPath: filepath.Join(env.ConfigPath, "sciond.toml"),
+		ConfigPath: filepath.Join(env.ConfigPath, "scion-as.toml"),
 	}
 
 	Services[service.Name] = service
@@ -218,9 +220,21 @@ func StartAllServices() error {
 	dispatcher, ok := Services["scion-dispatcher"]
 	if ok && !dispatcher.IsRunning() {
 		log.Println("[Env] service: ", dispatcher.Name, " is not running, starting...")
+
+		if fileops.FileOrFolderExists("/run/shm/dispatcher/default.sock") {
+			os.Remove("/run/shm/dispatcher/default.sock")
+		}
+
 		err := dispatcher.Start()
 		if err != nil {
 			errStr += fmt.Sprintf("Error starting service %s: %v\n", dispatcher.Name, err)
+		}
+
+		time.Sleep(2 * time.Second)
+		log.Println("[Env] Started service: ", dispatcher.Name, " setting proper permissions...")
+		err = os.Chmod("/run/shm/dispatcher/default.sock", 0777)
+		if err != nil {
+			errStr += fmt.Sprintf("Error setting permissions for dispatcher: %v\n", err)
 		}
 	}
 

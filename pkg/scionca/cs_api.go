@@ -65,7 +65,7 @@ func NewCaApiServer(configDir string, caConfig *conf.CA, ca *SCIONCertificateAth
 
 func (ar *CaApiServer) loadLatestTRC() error {
 	trcPath := filepath.Join(ar.CA.ConfigDir, "certs")
-	trcFiles, err := fileops.ListFilesByPrefixAndSuffix(trcPath, "ISD"+ar.CA.ISD, ".trc")
+	trcFiles, err := fileops.ListFilesByPrefixAndSuffix(trcPath, "ISD"+ar.CA.ISD+"-", ".trc")
 	sort.Strings(trcFiles)
 
 	if err != nil {

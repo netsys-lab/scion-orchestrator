@@ -115,6 +115,9 @@ func runInstall(env *environment.HostEnvironment, config *conf.SCIONConfig) erro
 		fmt.Printf("%s", string(jsonStatus))
 
 		return fmt.Errorf("Not all services started properly, Please check the logs or try again")
+	} else {
+		jsonStatus, _ := metrics.ASStatus.Json()
+		fmt.Printf("%s", string(jsonStatus))
 	}
 
 	return nil
