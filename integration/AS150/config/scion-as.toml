@@ -3,7 +3,7 @@ isd_as = "1-150"
 mode = "as"
 
 [metrics]
-server = "127.0.0.1:33401"
+prometheus = "127.0.0.1:33401"
 
 [bootstrap]
 server = "10.150.0.254:8041"

@@ -27,11 +27,14 @@ func runInstall(env *environment.HostEnvironment, config *conf.SCIONConfig, asCo
 		return err
 	}
 
-	log.Println("[Install] Stopping all services")
+	log.Println("[Install] Stopping all services...")
 	err = environment.StopAllServices()
 	if err != nil {
 		return err
 	}
+
+	// Systemd might need a moment to stop the services
+	time.Sleep(5 * time.Second)
 
 	log.Println("[Install] Installing files to ", env.BasePath)
 	err = env.Install()

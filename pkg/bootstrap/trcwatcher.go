@@ -80,14 +80,14 @@ func RunTrcFileWatcher(configDir string) error {
 
 	// Time interval (in seconds)
 	interval := 1 * time.Minute
-
+	log.Println("[Bootstrap Server] Updating trcs.json...")
 	for running {
-		log.Println("[Bootstrap Server] Updating trcs.json...")
+
 		err := createTRCsJSON(directoryPath, filepath.Join(configDir, "trcs.json"))
 		if err != nil {
 			return errors.New(fmt.Sprintf("[Bootstrap Server] Error creating TRCs JSON: %v\n", err))
 		} else {
-			log.Println("[Bootstrap Server] Update complete. Waiting for next interval...")
+			// log.Println("[Bootstrap Server] Update complete. Waiting for next interval...")
 		}
 
 		time.Sleep(interval)

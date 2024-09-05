@@ -37,6 +37,10 @@ var opts struct {
 
 var scionConfig *conf.SCIONConfig
 
+var install bool
+var run bool
+var shutdown bool
+
 func main() {
 
 	args, err := flags.Parse(&opts)
@@ -80,9 +84,9 @@ func main() {
 
 	env := environment.HostEnv
 
-	install := len(args) > 0 && args[0] == "install"
-	run := len(args) > 0 && args[0] == "run"
-	shutdown := len(args) > 0 && args[0] == "shutdown"
+	install = len(args) > 0 && args[0] == "install"
+	run = len(args) > 0 && args[0] == "run"
+	shutdown = len(args) > 0 && args[0] == "shutdown"
 
 	cancelChan := make(chan os.Signal, 1)
 	// catch SIGETRM or SIGINTERRUPT
@@ -182,11 +186,14 @@ func runBackgroundServices(env *environment.HostEnvironment, config *conf.Config
 			return metrics.RunStatusHTTPServer(config.Metrics.Server)
 		})
 
-		eg.Go(func() error {
-			healtchCheck := environment.NewServiceHealthCheck()
-			healtchCheck.Run()
-			return nil
-		})
+		// Standalone does its own health check
+		if !run {
+			eg.Go(func() error {
+				healtchCheck := environment.NewServiceHealthCheck()
+				healtchCheck.Run()
+				return nil
+			})
+		}
 
 		if !config.ServiceConfig.DisableCertRenewal {
 			eg.Go(func() error {
@@ -208,7 +215,7 @@ func runBackgroundServices(env *environment.HostEnvironment, config *conf.Config
 		})
 
 		log.Println("[Main] Running background services for CA")
-		log.Println(config.Ca.Clients)
+		// log.Println(config.Ca.Clients)
 		if config.Ca.Clients != nil && len(config.Ca.Clients) > 0 {
 			eg.Go(func() error {
 				// TODO: Only run if core AS
@@ -229,11 +236,14 @@ func runBackgroundServices(env *environment.HostEnvironment, config *conf.Config
 			})
 		}
 
-		eg.Go(func() error {
-			healtchCheck := environment.NewServiceHealthCheck()
-			healtchCheck.Run()
-			return nil
-		})
+		// Standalone does its own health check
+		if !run {
+			eg.Go(func() error {
+				healtchCheck := environment.NewServiceHealthCheck()
+				healtchCheck.Run()
+				return nil
+			})
+		}
 
 		if !config.ServiceConfig.DisableCertRenewal {
 			eg.Go(func() error {

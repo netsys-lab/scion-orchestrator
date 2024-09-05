@@ -1,7 +1,6 @@
 package conf
 
 import (
-	"log"
 	"os"
 
 	"github.com/pelletier/go-toml/v2"
@@ -69,7 +68,7 @@ func LoadConfig(path string) (*Config, error) {
 		return nil, err
 	}
 
-	log.Println(c)
+	// log.Println(c)
 
 	return c, nil
 }

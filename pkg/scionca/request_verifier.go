@@ -14,7 +14,6 @@ import (
 	"github.com/scionproto/scion/pkg/private/serrors"
 	"github.com/scionproto/scion/pkg/scrypto/cms/protocol"
 	"github.com/scionproto/scion/pkg/scrypto/cppki"
-	"github.com/sirupsen/logrus"
 )
 
 func decodePem(certInput []byte) tls.Certificate {
@@ -76,7 +75,7 @@ func ExtractAndVerifyCsr(trcPath string, bts []byte, file *os.File) (*x509.Certi
 
 	csr, err := VerifyCMSSignedRenewalRequest(context.Background(), bts, &r)
 	if err != nil {
-		log.Println("[CA] TESTEST Renew failed with error ", err)
+		log.Println("[CA] Renew failed with error ", err)
 		// return nil, err
 	}
 
@@ -84,9 +83,6 @@ func ExtractAndVerifyCsr(trcPath string, bts []byte, file *os.File) (*x509.Certi
 	if err != nil {
 		return nil, err
 	}
-
-	res, err := os.ReadFile(file.Name())
-	log.Println("[CA] TESTEST CSR: ", string(res))
 	return csr, nil
 }
 
@@ -156,14 +152,13 @@ func (lf *LocalFetcher) SignedTRC(ctx context.Context, isd addr.ISD) (cppki.Sign
 
 	// trcFile := filepath.Join(lf.TrcPath, trcId)
 	trcFile := lf.TrcPath
-	logrus.Info("Reading TRC ", trcFile)
+	log.Println("[CA] Reading TRC ", trcFile)
 	bts, err := os.ReadFile(trcFile)
 	if err != nil {
 		return trc, nil
 	}
 
 	block, _ := pem.Decode(bts)
-	logrus.Debug("Read TRC")
 	sTrc, err := DecodeSignedTRC(block.Bytes)
 	if err != nil {
 		return trc, err

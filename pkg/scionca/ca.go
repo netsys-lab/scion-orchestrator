@@ -70,7 +70,7 @@ func (ca *SCIONCertificateAuthority) LoadCA() error {
 }
 
 func (ca *SCIONCertificateAuthority) IssueCertificateFromCSR(csrFile string, dstFile, isd string, as string) error {
-	log.Println("Issuing certificate from CSR, csrFile ", csrFile)
+	log.Println("[CA] Issuing certificate from CSR, csrFile ", csrFile)
 	csrPEM, err := ioutil.ReadFile(csrFile)
 	if err != nil {
 		return fmt.Errorf("Failed to read CSR: %v\n", err)

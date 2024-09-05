@@ -235,7 +235,7 @@ func (ar *CaApiServer) authJwt(tokenStr string) (*jwt.Token, error) {
 
 	// Remove bearer things
 	realToken := strings.Replace(tokenStr, "Bearer ", "", 1)
-	log.Println("[CA] Got token for auth ", realToken)
+	// log.Println("[CA] Got token for auth ", realToken)
 
 	timeOffset := ""
 	timeOffsetEnv := os.Getenv("JWT_SUPPORTED_TIME_OFFSET_MINS")
@@ -281,6 +281,7 @@ func (ar *CaApiServer) authJwt(tokenStr string) (*jwt.Token, error) {
 				return client.Secret.Get() // TODO: Figure out real client here
 			})
 			if err == nil {
+				log.Println("[CA] Successfully authenticated client ", client.ClientId)
 				success = true
 			}
 		}(&client)
