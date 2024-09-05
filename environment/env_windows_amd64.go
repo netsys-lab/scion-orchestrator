@@ -18,10 +18,14 @@ func init() {
 	basePath := filepath.Join(programFiles, "scion")
 	configPath := basePath
 
-	EndhostEnv = &EndhostEnvironment{
+	HostEnv = &HostEnvironment{
 
-		ConfigPath:       configPath,
-		BasePath:         basePath,
-		DaemonConfigPath: configPath,
+		ConfigPath:        configPath,
+		BasePath:          basePath,
+		DaemonConfigPath:  configPath,
+		ControlConfigPath: configPath,
+		RouterConfigPath:  configPath,
+		DatabasePath:      filepath.Join(basePath, "database"),
+		LogPath:           filepath.Join(basePath, "logs"),
 	}
 }

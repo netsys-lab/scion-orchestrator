@@ -125,7 +125,9 @@ func (endhostEnv *HostEnvironment) installBinaries() error {
 		}
 		// return installMacService(serviceName, binaryPath, configPath)
 	case "windows":
-		return nil
+		// TODO: Since there is no bin folder in Windows, copy the files to a folder and add it to PATH
+		// https://stackoverflow.com/questions/44272416/how-to-add-a-folder-to-path-environment-variable-in-windows-10-with-screensho
+		return fmt.Errorf("Windows is not supported yet")
 		// return installWindowsService(serviceName, binaryPath, configPath)
 	default:
 		return fmt.Errorf("unsupported platform")
