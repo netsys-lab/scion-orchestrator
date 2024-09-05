@@ -43,16 +43,28 @@ func (endhostEnv *HostEnvironment) installBinaries() error {
 	if err != nil {
 		return err
 	}
+
+	binPath := "/usr/bin/"
+
+	// TODO: Windows and MacOS Support!
 	switch runtime.GOOS {
 	case "linux":
-		log.Println("[Install] Copying binaries to ", "/usr/bin")
-		err := fileops.CopyFile(filepath.Join("/usr/bin", "scion-as"), filepath.Join(workDir, "scion-as"))
+		break
+	case "darwin":
+		binPath = "/usr/local/bin"
+		break
+	}
+
+	switch runtime.GOOS {
+	case "linux":
+		log.Println("[Install] Copying binaries to ", binPath)
+		err := fileops.CopyFile(filepath.Join(binPath, "scion-as"), filepath.Join(workDir, "scion-as"))
 		if err != nil {
 			return err
 		}
 
 		// Make files executable
-		err = os.Chmod(filepath.Join("/usr/bin", "scion-as"), 0777)
+		err = os.Chmod(filepath.Join(binPath, "scion-as"), 0777)
 		if err != nil {
 			return err
 		}
@@ -67,19 +79,50 @@ func (endhostEnv *HostEnvironment) installBinaries() error {
 		}
 		// binaries := []string{"scion", "control", "router", "dispatcher", "gateway", "daemon"}
 		for _, binary := range binaries {
-			log.Println("[Install] Copy binary ", filepath.Join(workDir, "bin", binary), "to ", filepath.Join("/usr/bin", binary))
-			err = fileops.CopyFile(filepath.Join("/usr/bin", binary), filepath.Join(workDir, "bin", binary))
+			log.Println("[Install] Copy binary ", filepath.Join(workDir, "bin", binary), "to ", filepath.Join(binPath, binary))
+			err = fileops.CopyFile(filepath.Join(binPath, binary), filepath.Join(workDir, "bin", binary))
 			if err != nil {
 				return err
 			}
-			err = os.Chmod(filepath.Join("/usr/bin", binary), 0777)
+			err = os.Chmod(filepath.Join(binPath, binary), 0777)
 			if err != nil {
 				return err
 			}
 		}
 
 	case "darwin":
-		return nil
+		log.Println("[Install] Copying binaries to ", binPath)
+		err := fileops.CopyFile(filepath.Join(binPath, "scion-as"), filepath.Join(workDir, "scion-as"))
+		if err != nil {
+			return err
+		}
+
+		// Make files executable
+		err = os.Chmod(filepath.Join(binPath, "scion-as"), 0777)
+		if err != nil {
+			return err
+		}
+
+		files, err := fileops.ListFilesByPrefixAndSuffix(filepath.Join(workDir, "bin"), "", "")
+		if err != nil {
+			return err
+		}
+		binaries := []string{}
+		for _, file := range files {
+			binaries = append(binaries, filepath.Base(file))
+		}
+		// binaries := []string{"scion", "control", "router", "dispatcher", "gateway", "daemon"}
+		for _, binary := range binaries {
+			log.Println("[Install] Copy binary ", filepath.Join(workDir, "bin", binary), "to ", filepath.Join(binPath, binary))
+			err = fileops.CopyFile(filepath.Join(binPath, binary), filepath.Join(workDir, "bin", binary))
+			if err != nil {
+				return err
+			}
+			err = os.Chmod(filepath.Join(binPath, binary), 0777)
+			if err != nil {
+				return err
+			}
+		}
 		// return installMacService(serviceName, binaryPath, configPath)
 	case "windows":
 		return nil

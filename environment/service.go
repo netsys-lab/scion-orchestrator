@@ -154,6 +154,9 @@ func LoadServices(env *HostEnvironment, config *conf.SCIONConfig, asConfig *conf
 	switch runtime.GOOS {
 	case "linux":
 		break
+	case "darwin":
+		binPath = "/usr/local/bin"
+		break
 	}
 
 	if config.Dispatcher != nil && !asConfig.ServiceConfig.DisableDispatcher {
@@ -296,7 +299,13 @@ func (s *SystemService) IsRunning() bool {
 		//fmt.Println("Is running: ", string(bts))
 		//return string(bts) == "active"
 	case "darwin":
-		return false
+		cmd := exec.Command("sh", "-c", "launchctl list | grep "+s.Name)
+		err := cmd.Run()
+		// fmt.Println("Is running: ", err == nil)
+		if err != nil {
+			return false
+		}
+		return true
 		// return installMacService(serviceName, binaryPath, configPath)
 	case "windows":
 		return false
@@ -317,6 +326,11 @@ func (s *SystemService) Start() error {
 		}
 
 	case "darwin":
+		cmd := exec.Command("launchctl", "start", s.Name)
+		err := cmd.Run()
+		if err != nil {
+			return err
+		}
 		return nil
 		// return installMacService(serviceName, binaryPath, configPath)
 	case "windows":
@@ -340,7 +354,12 @@ func (s *SystemService) ReStart() error {
 		}
 
 	case "darwin":
-		return nil
+		err := s.Stop()
+		if err != nil {
+			return err
+		}
+
+		return s.Start()
 		// return installMacService(serviceName, binaryPath, configPath)
 	case "windows":
 		return nil
@@ -363,6 +382,11 @@ func (s *SystemService) Stop() error {
 		}
 
 	case "darwin":
+		cmd := exec.Command("launchctl", "stop", s.Name)
+		err := cmd.Run()
+		if err != nil {
+			return err
+		}
 		return nil
 		// return installMacService(serviceName, binaryPath, configPath)
 	case "windows":

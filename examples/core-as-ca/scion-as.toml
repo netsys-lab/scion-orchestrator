@@ -1,0 +1,14 @@
+command = "service"
+isd_as = "1-150"
+mode = "as"
+
+[metrics]
+prometheus = "127.0.0.1:33401"
+
+[bootstrap]
+server = "127.0.0.1:8041"
+# allowedSubnets = [""] # TODO: Rethink this
+
+[ca]
+server = ":3000"
+clients = ["123:client1.secret"] # Starts from configDir

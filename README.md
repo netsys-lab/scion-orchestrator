@@ -1,6 +1,20 @@
 # Scion-AS: Run a cross-platform SCION Host (Endhost or AS) 
 This tool called `scion-as` allows to setup SCION connectivity on a host, either as a regular process (`standalone`) or as installed service. Depending on the configuration it can run SCION infrastructure components (`Control Service`, `Border Router`, ...) to form a full AS or a regular `endhost` stack. `scion-as` is designed to support both cases and let the hosts running the SCION AS provide bootstrapping servers that the endhost can use to become part of the SCION AS.
 
+## Suppored Platforms
+
+Standalone:
+- [x] MacOS Arm64
+- [ ] MacOS Amd64
+- [x] Linux Amd64
+- [ ] Windows Amd64
+
+Install:
+- [ ] MacOS Arm64
+- [ ] MacOS Amd64
+- [ ] Linux Amd64
+- [ ] Windows Amd64
+
 ## Run as AS host
 
 ### Metrics / AS Status
