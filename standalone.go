@@ -137,6 +137,11 @@ func runStandaloneRouter(env environment.HostEnvironment, service conf.SCIONServ
 		return errors.New("Failed to configure folder for router config in " + tmpRouterFile + ": " + err.Error())
 	}
 
+	err = fileops.ReplaceSingleBackslashWithDouble(tmpRouterFile)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	router := environment.StandaloneService{
 		Name:       service.Name,
 		BinaryPath: filepath.Join("bin", "router"),
@@ -164,6 +169,11 @@ func runStandaloneControlService(env environment.HostEnvironment, service conf.S
 		return errors.New("Failed to configure folder for router config in " + tmpControlFile + ": " + err.Error())
 	}
 
+	err = fileops.ReplaceSingleBackslashWithDouble(tmpControlFile)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	control := environment.StandaloneService{
 		Name:       service.Name,
 		BinaryPath: filepath.Join("bin", "control"),
@@ -189,6 +199,11 @@ func runStandaloneDaemon(env environment.HostEnvironment, service conf.SCIONServ
 	err = fileops.ReplaceStringInFile(tmpDaemonFile, "{databaseDir}", env.DatabasePath+string(os.PathSeparator))
 	if err != nil {
 		return errors.New("Failed to configure folder for daemon config in " + tmpDaemonFile + ": " + err.Error())
+	}
+
+	err = fileops.ReplaceSingleBackslashWithDouble(tmpDaemonFile)
+	if err != nil {
+		log.Fatal(err)
 	}
 
 	daemon := environment.StandaloneService{
