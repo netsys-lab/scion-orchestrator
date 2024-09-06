@@ -1,7 +1,6 @@
 package environment
 
 import (
-	"embed"
 	"fmt"
 	"os"
 	"path/filepath"

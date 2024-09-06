@@ -1,11 +1,18 @@
 # !/bin/bash
 set -e
-rm -rf dev
-mkdir dev
-cd dev
-git clone https://github.com/scionproto/scion.git
-cd scion
-git checkout f51e6dab7
+# Check if dev directory exists
+if [ -d "dev" ]; then
+    echo "Directory dev exists."
+    echo "Deleting dev directory."
+    rm -rf dev
+    mkdir dev
+    cd dev
+    git clone https://github.com/scionproto/scion.git
+    cd scion
+    git checkout f51e6dab7
+    cd ../../
+fi
+cd dev/scion/
 
 
 cd scion/cmd/scion
@@ -32,12 +39,3 @@ cp dev/scion/router/cmd/router/router ./bin/
 cp dev/scion/control/cmd/control/control ./bin/
 cp dev/scion/daemon/cmd/daemon/daemon ./bin/
 cp dev/scion/dispatcher/cmd/dispatcher/dispatcher ./bin/
-
-mkdir -p integration/bin
-
-cp dev/scion/scion/cmd/scion/scion ./integration/bin/
-cp dev/scion/scion-pki/cmd/scion-pki/scion-pki ./integration/bin/
-cp dev/scion/router/cmd/router/router ./integration/bin/
-cp dev/scion/control/cmd/control/control ./integration/bin/
-cp dev/scion/daemon/cmd/daemon/daemon ./integration/bin/
-cp dev/scion/dispatcher/cmd/dispatcher/dispatcher ./integration/bin/
