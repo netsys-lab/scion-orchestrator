@@ -1,4 +1,4 @@
-module github.com/netsys-lab/scion-as
+module github.com/netsys-lab/scion-orchestrator
 
 go 1.22
 
@@ -11,7 +11,6 @@ require (
 	github.com/jessevdk/go-flags v1.5.0
 	github.com/pelletier/go-toml/v2 v2.2.2
 	github.com/scionproto/scion v0.11.0
-	github.com/sirupsen/logrus v1.9.3
 	golang.org/x/net v0.25.0
 	golang.org/x/sync v0.8.0
 )

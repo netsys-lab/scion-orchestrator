@@ -2,4 +2,4 @@
 
 set -e
 cd /root/AS150
-./scion-as run
+./scion-orchestrator run

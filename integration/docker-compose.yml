@@ -10,7 +10,7 @@ services:
     privileged: true
     volumes:
       - "./AS150:/root/AS150"
-      - "./scion-as:/root/AS150/scion-as"
+      - "./scion-orchestrator:/root/AS150/scion-orchestrator"
       - "./bin/:/root/AS150/bin"
     networks:
       net_150_net0:
@@ -26,7 +26,7 @@ services:
     privileged: true
     volumes:
       - "./Host150:/root/Host150"
-      - "./scion-as:/root/Host150/scion-as"
+      - "./scion-orchestrator:/root/Host150/scion-orchestrator"
       - "./bin/:/root/Host150/bin"
     networks:
       net_150_net0:
@@ -40,7 +40,7 @@ services:
     privileged: true
     volumes:
       - "./AS151:/root/AS151"
-      - "./scion-as:/root/AS151/scion-as"
+      - "./scion-orchestrator:/root/AS151/scion-orchestrator"
       - "./bin/:/root/AS151/bin"
     networks:
       net_150_net0:

@@ -18,9 +18,9 @@ import (
 
 	"github.com/go-chi/chi"
 	"github.com/golang-jwt/jwt/v4"
-	"github.com/netsys-lab/scion-as/conf"
-	"github.com/netsys-lab/scion-as/pkg/fileops"
-	"github.com/netsys-lab/scion-as/pkg/scionca/models"
+	"github.com/netsys-lab/scion-orchestrator/conf"
+	"github.com/netsys-lab/scion-orchestrator/pkg/fileops"
+	"github.com/netsys-lab/scion-orchestrator/pkg/scionca/models"
 
 	caconfig "github.com/scionproto/scion/private/ca/config"
 )

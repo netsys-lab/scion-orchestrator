@@ -9,7 +9,7 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/netsys-lab/scion-as/pkg/fileops"
+	"github.com/netsys-lab/scion-orchestrator/pkg/fileops"
 )
 
 var HostEnv *HostEnvironment
@@ -58,13 +58,13 @@ func (endhostEnv *HostEnvironment) installBinaries() error {
 	switch runtime.GOOS {
 	case "linux":
 		log.Println("[Install] Copying binaries to ", binPath)
-		err := fileops.CopyFile(filepath.Join(binPath, "scion-as"), filepath.Join(workDir, "scion-as"))
+		err := fileops.CopyFile(filepath.Join(binPath, "scion-orchestrator"), filepath.Join(workDir, "scion-orchestrator"))
 		if err != nil {
 			return err
 		}
 
 		// Make files executable
-		err = os.Chmod(filepath.Join(binPath, "scion-as"), 0777)
+		err = os.Chmod(filepath.Join(binPath, "scion-orchestrator"), 0777)
 		if err != nil {
 			return err
 		}
@@ -92,13 +92,13 @@ func (endhostEnv *HostEnvironment) installBinaries() error {
 
 	case "darwin":
 		log.Println("[Install] Copying binaries to ", binPath)
-		err := fileops.CopyFile(filepath.Join(binPath, "scion-as"), filepath.Join(workDir, "scion-as"))
+		err := fileops.CopyFile(filepath.Join(binPath, "scion-orchestrator"), filepath.Join(workDir, "scion-orchestrator"))
 		if err != nil {
 			return err
 		}
 
 		// Make files executable
-		err = os.Chmod(filepath.Join(binPath, "scion-as"), 0777)
+		err = os.Chmod(filepath.Join(binPath, "scion-orchestrator"), 0777)
 		if err != nil {
 			return err
 		}
@@ -154,7 +154,7 @@ func (endhostEnv *HostEnvironment) Install() error {
 
 	localConfigFolder := filepath.Join(wd, "config")
 	destSciondFile := filepath.Join(endhostEnv.ConfigPath, "sciond.toml")
-	destScionASFile := filepath.Join(endhostEnv.ConfigPath, "scion-as.toml")
+	destScionASFile := filepath.Join(endhostEnv.ConfigPath, "scion-orchestrator.toml")
 
 	localBorderRouterConfigFiles, err := fileops.ListFilesByPrefixAndSuffix(localConfigFolder, "br-", ".toml")
 	if err != nil {

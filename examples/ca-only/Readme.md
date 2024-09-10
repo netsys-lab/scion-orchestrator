@@ -1,3 +1,3 @@
-# Run scion-as as standalone CA
+# Run scion-orchestrator as standalone CA
 
 tbd...

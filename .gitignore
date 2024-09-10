@@ -19,7 +19,7 @@ environment/windowsx64/daemon.exe
 environment/windowsx64/dispatcher.exe
 
 dev/
-scion-as
+scion-orchestrator
 integration/bin/
 integration/AS150/bin/
 integration/AS150/config/tmp/

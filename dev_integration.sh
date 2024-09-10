@@ -4,13 +4,12 @@ set -e
 # Check if dev directory exists
 if [ -d "dev" ]; then
     echo "Directory dev exists."
-    echo "Deleting dev directory."
-    rm -rf dev
+else 
     mkdir dev
     cd dev
     git clone https://github.com/scionproto/scion.git
     cd scion
-    git checkout f51e6dab7
+    git checkout 79e7080b3f9471434c3b2e35026ae43dec794c9d
     cd ../../
 fi
 cd dev/scion/
@@ -39,3 +38,5 @@ cp dev/scion/router/cmd/router/router ./integration/bin/
 cp dev/scion/control/cmd/control/control ./integration/bin/
 cp dev/scion/daemon/cmd/daemon/daemon ./integration/bin/
 cp dev/scion/dispatcher/cmd/dispatcher/dispatcher ./integration/bin/
+
+CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build && cp scion-orchestrator ./integration/

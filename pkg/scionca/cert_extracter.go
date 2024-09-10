@@ -5,7 +5,7 @@ import (
 	"encoding/base64"
 	"io/ioutil"
 
-	"github.com/netsys-lab/scion-as/pkg/scionca/models"
+	"github.com/netsys-lab/scion-orchestrator/pkg/scionca/models"
 )
 
 func ExtractCerts(path string) (*models.CertificateChain, error) {

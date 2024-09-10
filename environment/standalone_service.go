@@ -5,7 +5,7 @@ import (
 	"os/exec"
 	"strings"
 
-	"github.com/netsys-lab/scion-as/pkg/metrics"
+	"github.com/netsys-lab/scion-orchestrator/pkg/metrics"
 )
 
 type StandaloneService struct {

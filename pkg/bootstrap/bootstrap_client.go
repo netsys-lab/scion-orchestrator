@@ -3,8 +3,8 @@ package bootstrap
 import (
 	"net"
 
-	"github.com/netsys-lab/scion-as/conf"
-	"github.com/netsys-lab/scion-as/environment"
+	"github.com/netsys-lab/scion-orchestrator/conf"
+	"github.com/netsys-lab/scion-orchestrator/environment"
 )
 
 // TODO: Replace insecure mode, verify everything is working properly

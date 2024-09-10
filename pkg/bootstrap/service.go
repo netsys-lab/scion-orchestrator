@@ -1,7 +1,7 @@
 package bootstrap
 
 import (
-	"github.com/netsys-lab/scion-as/pkg/metrics"
+	"github.com/netsys-lab/scion-orchestrator/pkg/metrics"
 	"golang.org/x/sync/errgroup"
 )
 

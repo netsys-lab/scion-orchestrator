@@ -9,7 +9,7 @@ else
     cd dev
     git clone https://github.com/scionproto/scion.git
     cd scion
-    git checkout f51e6dab7
+    git checkout 79e7080b3f9471434c3b2e35026ae43dec794c9d
     cd ../../
 fi
 cd dev/scion/

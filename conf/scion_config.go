@@ -6,7 +6,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/netsys-lab/scion-as/pkg/fileops"
+	"github.com/netsys-lab/scion-orchestrator/pkg/fileops"
 )
 
 type SCIONService struct {

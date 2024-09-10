@@ -10,9 +10,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/netsys-lab/scion-as/conf"
-	"github.com/netsys-lab/scion-as/pkg/fileops"
-	"github.com/netsys-lab/scion-as/pkg/metrics"
+	"github.com/netsys-lab/scion-orchestrator/conf"
+	"github.com/netsys-lab/scion-orchestrator/pkg/fileops"
+	"github.com/netsys-lab/scion-orchestrator/pkg/metrics"
 )
 
 var Services = map[string]*SystemService{}
@@ -126,7 +126,7 @@ func UpdateHealthCheck() bool {
 				}
 				metrics.ASStatus.Daemon = met
 			}
-		} else if strings.Contains(service.BinaryPath, "scion-as") {
+		} else if strings.Contains(service.BinaryPath, "scion-orchestrator") {
 			if !service.IsRunning() {
 				met := metrics.ServiceStatus{
 					Status:  metrics.SERVICE_STATUS_ERROR,
@@ -205,13 +205,13 @@ func LoadServices(env *HostEnvironment, config *conf.SCIONConfig, asConfig *conf
 	}
 
 	service := &SystemService{
-		Name:       "scion-as",
-		BinaryPath: filepath.Join(binPath, "scion-as"),
-		ConfigPath: filepath.Join(env.ConfigPath, "scion-as.toml"),
+		Name:       "scion-orchestrator",
+		BinaryPath: filepath.Join(binPath, "scion-orchestrator"),
+		ConfigPath: filepath.Join(env.ConfigPath, "scion-orchestrator.toml"),
 	}
 
 	Services[service.Name] = service
-	log.Println("[Env] Loaded SCION-AS Service")
+	log.Println("[Env] Loaded scion-orchestrator Service")
 	return nil
 }
 
@@ -501,7 +501,7 @@ func init() {
 	Services = make(map[string]*SystemService)
 }
 
-// Run the scion-as service and also install it as a service, then stop it when seeing that it runs as a service
+// Run the scion-orchestrator service and also install it as a service, then stop it when seeing that it runs as a service
 
 /*func main() {
 	serviceName := "example-binary"

@@ -14,8 +14,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/netsys-lab/scion-as/pkg/fileops"
-	"github.com/netsys-lab/scion-as/pkg/metrics"
+	"github.com/netsys-lab/scion-orchestrator/pkg/fileops"
+	"github.com/netsys-lab/scion-orchestrator/pkg/metrics"
 )
 
 type CertificateRenewer struct {

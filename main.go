@@ -13,12 +13,12 @@ import (
 	"github.com/jessevdk/go-flags"
 	"golang.org/x/sync/errgroup"
 
-	"github.com/netsys-lab/scion-as/conf"
-	"github.com/netsys-lab/scion-as/environment"
-	"github.com/netsys-lab/scion-as/pkg/bootstrap"
-	"github.com/netsys-lab/scion-as/pkg/fileops"
-	"github.com/netsys-lab/scion-as/pkg/metrics"
-	"github.com/netsys-lab/scion-as/pkg/scionca"
+	"github.com/netsys-lab/scion-orchestrator/conf"
+	"github.com/netsys-lab/scion-orchestrator/environment"
+	"github.com/netsys-lab/scion-orchestrator/pkg/bootstrap"
+	"github.com/netsys-lab/scion-orchestrator/pkg/fileops"
+	"github.com/netsys-lab/scion-orchestrator/pkg/metrics"
+	"github.com/netsys-lab/scion-orchestrator/pkg/scionca"
 )
 
 var opts struct {
@@ -29,10 +29,10 @@ var opts struct {
 	Config string `short:"c" long:"config" description:"Path to configuration file"`
 
 	// Example of optional value
-	InstallDir string `short:"d" long:"dir" description:"Directory to install scion-as as service" `
+	InstallDir string `short:"d" long:"dir" description:"Directory to install scion-orchestrator as service" `
 
 	// Example of optional value
-	// Install bool `short:"i" long:"install" description:"Install scion-as as a system service" `
+	// Install bool `short:"i" long:"install" description:"Install scion-orchestrator as a system service" `
 }
 
 var scionConfig *conf.SCIONConfig
@@ -49,17 +49,17 @@ func main() {
 		os.Exit(1)
 	}
 
-	log.Println("[Main] Starting scion-as")
+	log.Println("[Main] Starting scion-orchestrator")
 	log.Println("[Main] Running on ", runtime.GOOS)
 	log.Println("[Main] Args: ", args)
 
-	configPath := filepath.Join("config", "scion-as.toml")
+	configPath := filepath.Join("config", "scion-orchestrator.toml")
 	if opts.Config != "" {
 		configPath = opts.Config
 	}
 
 	config, err := conf.LoadConfig(configPath)
-	log.Println("[Main] scion-as config loaded successfully")
+	log.Println("[Main] scion-orchestrator config loaded successfully")
 
 	if fileops.FileOrFolderExists("config") {
 		// log.Println("[Main] Config folder exists")
@@ -122,7 +122,7 @@ func main() {
 			}
 		}()
 
-		log.Println("[Main] SCION-AS Service started, waiting for termination signal")
+		log.Println("[Main] scion-orchestrator Service started, waiting for termination signal")
 		sig := <-cancelChan
 		log.Printf("[Signal] Caught signal %v", sig)
 

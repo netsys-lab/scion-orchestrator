@@ -8,10 +8,10 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/netsys-lab/scion-as/conf"
-	"github.com/netsys-lab/scion-as/environment"
-	"github.com/netsys-lab/scion-as/pkg/bootstrap"
-	"github.com/netsys-lab/scion-as/pkg/fileops"
+	"github.com/netsys-lab/scion-orchestrator/conf"
+	"github.com/netsys-lab/scion-orchestrator/environment"
+	"github.com/netsys-lab/scion-orchestrator/pkg/bootstrap"
+	"github.com/netsys-lab/scion-orchestrator/pkg/fileops"
 	"golang.org/x/sync/errgroup"
 )
 

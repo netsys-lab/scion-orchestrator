@@ -6,9 +6,9 @@ import (
 	"os"
 	"time"
 
-	"github.com/netsys-lab/scion-as/conf"
-	"github.com/netsys-lab/scion-as/environment"
-	"github.com/netsys-lab/scion-as/pkg/metrics"
+	"github.com/netsys-lab/scion-orchestrator/conf"
+	"github.com/netsys-lab/scion-orchestrator/environment"
+	"github.com/netsys-lab/scion-orchestrator/pkg/metrics"
 )
 
 func runInstall(env *environment.HostEnvironment, config *conf.SCIONConfig, asConfig *conf.Config) error {
@@ -94,8 +94,8 @@ func runInstall(env *environment.HostEnvironment, config *conf.SCIONConfig, asCo
 		log.Println("[Install] Installed Border Router Service: ", service.Name)
 	}
 
-	log.Println("[Install] Installing SCION-AS Service")
-	service, ok := environment.Services["scion-as"]
+	log.Println("[Install] Installing scion-orchestrator Service")
+	service, ok := environment.Services["scion-orchestrator"]
 	if !ok {
 		log.Println("[Install] SCION AS Service not found in environment, name mismatch...")
 		return fmt.Errorf("SCION AS Service not found in environment, name mismatch...")
@@ -105,7 +105,7 @@ func runInstall(env *environment.HostEnvironment, config *conf.SCIONConfig, asCo
 	if err != nil {
 		return err
 	}
-	log.Println("[Install] SCION-AS Service installed")
+	log.Println("[Install] scion-orchestrator Service installed")
 
 	err = environment.StartAllServices()
 	if err != nil {
