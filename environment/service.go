@@ -67,7 +67,7 @@ func (s *ServiceHealthCheck) Run() {
 }
 
 func UpdateHealthCheck() bool {
-	log.Println("[Env] Updating Health Check for services: ", len(Services))
+	// log.Println("[Env] Updating Health Check for services: ", len(Services))
 	allServicesRunning := true
 	for _, service := range Services {
 		if strings.Contains(service.BinaryPath, "control") {
@@ -238,9 +238,11 @@ func StartAllServices() error {
 
 		time.Sleep(2 * time.Second)
 		log.Println("[Env] Started service: ", dispatcher.Name, " setting proper permissions...")
-		err = os.Chmod("/run/shm/dispatcher/default.sock", 0777)
-		if err != nil {
-			errStr += fmt.Sprintf("Error setting permissions for dispatcher: %v\n", err)
+		if fileops.FileOrFolderExists("/run/shm/dispatcher/default.sock") {
+			err = os.Chmod("/run/shm/dispatcher/default.sock", 0777)
+			if err != nil {
+				errStr += fmt.Sprintf("Error setting permissions for dispatcher: %v\n", err)
+			}
 		}
 	}
 
