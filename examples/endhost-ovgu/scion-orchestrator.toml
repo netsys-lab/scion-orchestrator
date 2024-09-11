@@ -1,0 +1,10 @@
+command = "service"
+isd_as = "71-2:0:4a"
+mode = "endhost"
+
+[metrics]
+server = "127.0.0.1:33401"
+
+[bootstrap]
+server = "141.44.25.151:8041" # Ovgu specific, set your bootstrap url here
+# allowedSubnets = [""] # TODO: Rethink this
