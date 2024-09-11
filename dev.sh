@@ -38,3 +38,5 @@ cp dev/scion/router/cmd/router/router ./bin/
 cp dev/scion/control/cmd/control/control ./bin/
 cp dev/scion/daemon/cmd/daemon/daemon ./bin/
 cp dev/scion/dispatcher/cmd/dispatcher/dispatcher ./bin/
+
+CGO_ENABLED=0 go build

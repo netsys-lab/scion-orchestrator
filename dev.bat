@@ -66,4 +66,7 @@ copy /Y dev\scion\control\cmd\control\control.exe integration\bin\
 copy /Y dev\scion\daemon\cmd\daemon\daemon.exe integration\bin\
 copy /Y dev\scion\dispatcher\cmd\dispatcher\dispatcher.exe integration\bin\
 
-echo Build completed successfully
+echo SCION Build completed successfully
+echo Building scion-orchestrator...
+go build
+echo Done
