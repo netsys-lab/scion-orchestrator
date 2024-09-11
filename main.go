@@ -206,7 +206,7 @@ func runBackgroundServices(env *environment.HostEnvironment, config *conf.Config
 	} else {
 		if !config.ServiceConfig.DisableBootstrapServer {
 			eg.Go(func() error {
-				return bootstrap.RunBootstrapService(env.ConfigPath, config.Bootstrap.Server)
+				return bootstrap.RunBootstrapService(env.ConfigPath, config.Bootstrap.Server, config)
 			})
 		}
 

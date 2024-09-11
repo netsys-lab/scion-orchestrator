@@ -9,6 +9,8 @@ import (
 	"path/filepath"
 	"regexp"
 	"time"
+
+	"github.com/netsys-lab/scion-orchestrator/conf"
 )
 
 // Structure to hold TRC information
@@ -74,7 +76,7 @@ func createTRCsJSON(directory string, targetFile string) error {
 	return nil
 }
 
-func RunTrcFileWatcher(configDir string) error {
+func RunTrcFileWatcher(configDir string, config *conf.Config) error {
 	// Directory containing the TRC files
 	directoryPath := filepath.Join(configDir, "certs")
 

@@ -7,9 +7,12 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
+
+	"github.com/netsys-lab/scion-orchestrator/conf"
+	"github.com/netsys-lab/scion-orchestrator/pkg/jsonutils"
 )
 
-func RunBootstrapServer(configDir string, url string) error {
+func RunBootstrapServer(configDir string, url string, config *conf.Config) error {
 	// TODO: Configure logging
 	// TODO: Source IP Validation
 	//accessLog := log.New(os.Stdout, "ACCESS: ", log.LstdFlags)
@@ -27,6 +30,15 @@ func RunBootstrapServer(configDir string, url string) error {
 		//	r.UserAgent(), r.Header.Get("X-Forwarded-For"))
 
 		if strings.HasPrefix(r.URL.Path, "/topology") {
+			if config.Bootstrap.TopologyOverwrites != nil && len(config.Bootstrap.TopologyOverwrites) > 0 {
+				err := jsonutils.OverwriteJSON(filepath.Join(configDir, "topology.json"), config.Bootstrap.TopologyOverwrites, filepath.Join(configDir, "topology_endhosts.json"))
+				if err != nil {
+					log.Println("[Bootstrap Server] Error overwriting topology.json: ", err)
+				}
+				log.Println("[Bootstrap Server] Serving topology_endhosts.json: ", filepath.Join(configDir, "topology_endhosts.json"))
+				http.ServeFile(w, r, filepath.Join(configDir, "topology_endhosts.json"))
+				return
+			}
 			log.Println("[Bootstrap Server] Serving topology.json: ", filepath.Join(configDir, "topology.json"))
 			http.ServeFile(w, r, filepath.Join(configDir, "topology.json"))
 		} else if strings.HasPrefix(r.URL.Path, "/trcs") {

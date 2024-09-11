@@ -23,7 +23,8 @@ type CA struct {
 }
 
 type Bootstrap struct {
-	Server string
+	Server             string
+	TopologyOverwrites []string `toml:"topology_overwrites,omitempty"`
 }
 
 type ServiceConfig struct {
