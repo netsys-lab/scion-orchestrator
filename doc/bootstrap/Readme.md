@@ -16,4 +16,12 @@ topology_overwrites = [
     "border_routers.br-1.internal_addr=127.0.0.1:30004",
     "control_service.cs-1.addr=127.0.0.1:34003",
 ]
+
+# This property allows to define subnets from which requests to the bootstrapping server are allowed
+# If empty, all source IPs are allowed.
+# If this list contains any entries, all requests from other source IPs are served with 403 forbidden
+allowed_subnets = [
+    "10.0.0.0/8",
+    "192.168.0.0/24",
+]
 ```

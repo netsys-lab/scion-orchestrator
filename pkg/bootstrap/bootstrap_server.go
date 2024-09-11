@@ -10,6 +10,7 @@ import (
 
 	"github.com/netsys-lab/scion-orchestrator/conf"
 	"github.com/netsys-lab/scion-orchestrator/pkg/jsonutils"
+	"github.com/netsys-lab/scion-orchestrator/pkg/netutils"
 )
 
 func RunBootstrapServer(configDir string, url string, config *conf.Config) error {
@@ -25,6 +26,28 @@ func RunBootstrapServer(configDir string, url string, config *conf.Config) error
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate")
 		w.Header().Set("Expires", "0")
+
+		// Get the client's IP address
+		ip := strings.Split(r.RemoteAddr, ":")[0]
+		log.Println("[Bootstrap Server] Serving request from: ", ip)
+
+		// If operators configure subnet filtering, enforce this here
+		if config.Bootstrap.AllowedSubnets != nil || len(config.Bootstrap.AllowedSubnets) > 0 {
+			ipOk, err := netutils.IsIPInSubnets(ip, config.Bootstrap.AllowedSubnets)
+			if err != nil {
+				log.Println("[Bootstrap Server] Error filtering in bootstrap.allowed_subnets: ", err)
+				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+				return
+			}
+
+			// Check if the IP is in a blocked subnet
+			if !ipOk {
+				log.Println("[Bootstrap Server] Blocked access from IP: ", ip)
+				http.Error(w, "Forbidden", http.StatusForbidden)
+				return
+			}
+		}
+
 		// accessLog.Printf("%s - %s \"%s\" %s \"%s\" \"%s\" \"%s\"",
 		//	r.RemoteAddr, "-", r.Method+" "+r.URL.Path+" "+r.Proto, http.StatusOK, r.Referer(),
 		//	r.UserAgent(), r.Header.Get("X-Forwarded-For"))
