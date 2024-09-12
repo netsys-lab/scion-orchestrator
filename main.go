@@ -9,6 +9,7 @@ import (
 	"runtime"
 	"strings"
 	"syscall"
+	"time"
 
 	"github.com/jessevdk/go-flags"
 	"golang.org/x/sync/errgroup"
@@ -194,15 +195,6 @@ func runBackgroundServices(env *environment.HostEnvironment, config *conf.Config
 				return nil
 			})
 		}
-
-		if !config.ServiceConfig.DisableCertRenewal {
-			eg.Go(func() error {
-				// TODO: Obtain ISD AS from config
-				renewer := scionca.NewCertificateRenewer(env.ConfigPath, config.IsdAs, 6)
-				renewer.Run()
-				return nil
-			})
-		}
 	} else {
 		if !config.ServiceConfig.DisableBootstrapServer {
 			eg.Go(func() error {
@@ -248,6 +240,8 @@ func runBackgroundServices(env *environment.HostEnvironment, config *conf.Config
 		if !config.ServiceConfig.DisableCertRenewal {
 			eg.Go(func() error {
 				renewer := scionca.NewCertificateRenewer(env.ConfigPath, config.IsdAs, 6)
+				log.Println("[Main] Starting certificate renewal with 30s delay...")
+				time.Sleep(30 * time.Second)
 				renewer.Run()
 				return nil
 			})
