@@ -1,5 +1,5 @@
 command = "service"
-isd_as = "71-2:0:4a"
+isd_as = "71-2:0:4a" # Ovgu specific, set your bootstrap url here
 mode = "endhost"
 
 [metrics]
