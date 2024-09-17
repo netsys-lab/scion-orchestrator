@@ -177,6 +177,7 @@ func (ar *CaApiServer) renewCert(wr http.ResponseWriter, req *http.Request) {
 	/*stepCli := step.NewStepCliAdapter()*/
 
 	// certFile, err := os.CreateTemp("/tmp/", "*.crt")
+	// TODO: Make this platform independent
 	certFileName := filepath.Join("/tmp", fmt.Sprintf("%s.cert", randomString(16)))
 	if err != nil {
 		log.Println("[CA] Renew failed with error ", err)

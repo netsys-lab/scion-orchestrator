@@ -14,6 +14,12 @@ type Config struct {
 	IsdAs         string        `toml:"isd_as,omitempty"`
 	Ca            CA            `toml:"ca,omitempty"`
 	ServiceConfig ServiceConfig `toml:"service_config,omitempty"`
+	Api           Api           `toml:"api,omitempty"`
+}
+
+type Api struct {
+	Address string   `toml:"address,omitempty"`
+	Users   []string `toml:"users,omitempty"`
 }
 
 type CA struct {

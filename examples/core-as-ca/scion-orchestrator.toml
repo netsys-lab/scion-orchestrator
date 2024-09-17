@@ -12,3 +12,6 @@ server = "127.0.0.1:8041"
 [ca]
 server = ":3000"
 clients = ["123:client1.secret"] # Starts from configDir
+
+[api]
+users = ["admin:admin.secret"] # Starts from configDir

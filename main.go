@@ -16,7 +16,9 @@ import (
 
 	"github.com/netsys-lab/scion-orchestrator/conf"
 	"github.com/netsys-lab/scion-orchestrator/environment"
+	"github.com/netsys-lab/scion-orchestrator/pkg/apiv1"
 	"github.com/netsys-lab/scion-orchestrator/pkg/bootstrap"
+	"github.com/netsys-lab/scion-orchestrator/pkg/certutils"
 	"github.com/netsys-lab/scion-orchestrator/pkg/fileops"
 	"github.com/netsys-lab/scion-orchestrator/pkg/metrics"
 	"github.com/netsys-lab/scion-orchestrator/pkg/scionca"
@@ -207,6 +209,25 @@ func runBackgroundServices(env *environment.HostEnvironment, config *conf.Config
 		})
 
 		log.Println("[Main] Running background services for CA")
+
+		// TODO: Check which services do really need a control plane cert/key
+		// TODO: Need to fail here??
+		if len(scionConfig.ControlServices) > 0 || len(scionConfig.BorderRouters) > 0 {
+			err := certutils.EnsureASPrivateKeyExists(env.ConfigPath, config.IsdAs)
+			if err != nil {
+				log.Println("[Main] Error ensuring AS private key exists: ", err)
+			}
+		}
+
+		if len(config.Api.Users) == 0 {
+			log.Println("[Main] Warning: No users defined for API, endpoints can not be accessed")
+		} else {
+			log.Println("[Main] Starting API server...")
+			eg.Go(func() error {
+				return apiv1.RunApiServer(env, config)
+			})
+		}
+
 		// log.Println(config.Ca.Clients)
 		if config.Ca.Clients != nil && len(config.Ca.Clients) > 0 {
 			eg.Go(func() error {
