@@ -43,6 +43,7 @@ var scionConfig *conf.SCIONConfig
 var install bool
 var run bool
 var shutdown bool
+var restart bool
 
 func main() {
 
@@ -90,6 +91,7 @@ func main() {
 	install = len(args) > 0 && args[0] == "install"
 	run = len(args) > 0 && args[0] == "run"
 	shutdown = len(args) > 0 && args[0] == "shutdown"
+	restart = len(args) > 0 && args[0] == "restart"
 
 	cancelChan := make(chan os.Signal, 1)
 	// catch SIGETRM or SIGINTERRUPT
@@ -158,6 +160,15 @@ func main() {
 		log.Println("[Main] All services stopped. AS Status is now:")
 		jsonStatus, _ := metrics.ASStatus.Json()
 		fmt.Printf("%s", string(jsonStatus))
+	} else if restart {
+		// log.Println("[Main] Shutting down all service")
+		err = runRestart(env, scionConfig, *config)
+		if err != nil {
+			log.Fatal(err)
+		}
+		log.Println("[Main] All services restarted. AS Status is now:")
+		jsonStatus, _ := metrics.ASStatus.Json()
+		fmt.Printf("%s", string(jsonStatus))
 	}
 
 	if err != nil {
@@ -174,6 +185,28 @@ func runShutdown(env *environment.HostEnvironment, config *conf.SCIONConfig, asC
 
 	log.Println("[Main] Stopping all services")
 	err = environment.StopAllServices()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func runRestart(env *environment.HostEnvironment, config *conf.SCIONConfig, asConfig conf.Config) error {
+	log.Println("[Main] Restarting SCION AS")
+	err := environment.LoadServices(env, config, &asConfig)
+	if err != nil {
+		return err
+	}
+
+	log.Println("[Main] Stopping all services")
+	err = environment.StopAllServices()
+	if err != nil {
+		return err
+	}
+
+	time.Sleep(10 * time.Second)
+	log.Println("[Main] Starting all services")
+	err = environment.StartAllServices()
 	if err != nil {
 		return err
 	}
