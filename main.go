@@ -103,7 +103,7 @@ func main() {
 		if config.Mode == "endhost" {
 			log.Println("[Main] Running bootstrapper to fetch configuration...")
 			err = bootstrap.BootstrapFromAddress(env, config)
-			if err != nil {
+			if err != nil && !config.Bootstrap.AllowClientFail {
 				log.Println("[Main] Failed to bootstrap host: ", err)
 				log.Fatal(err)
 			}

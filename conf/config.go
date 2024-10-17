@@ -32,6 +32,7 @@ type Bootstrap struct {
 	Server             string
 	TopologyOverwrites []string `toml:"topology_overwrites,omitempty"`
 	AllowedSubnets     []string `toml:"allowed_subnets,omitempty"`
+	AllowClientFail    bool     `toml:"allow_client_fail,omitempty"`
 }
 
 type ServiceConfig struct {

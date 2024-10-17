@@ -276,7 +276,7 @@ func fetchRawBytes(fileName string, url string) ([]byte, error) {
 	defer cancelF()
 	r, err := fetchHTTP(ctx, url)
 	if err != nil {
-		log.Println(fmt.Sprintf("Failed to fetch %s from %s", fileName, url), "err", err)
+		// log.Println(fmt.Sprintf("Failed to fetch %s from %s", fileName, url), "err", err)
 		return nil, err
 	}
 	// Close response reader and handle errors
