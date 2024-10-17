@@ -52,7 +52,20 @@ To build the tooling, you need to have `go >= 1.23` and `git` installed.
 Start the build process by running `./dev.sh`. This will clone the latest tested SCION commit into `dev/` and build all the binaries for your platform and copy them into the `bin` directory.
 
 ### Windows
-Start the build process by running `dev.bat`. This will clone the latest tested SCION commit into `dev/` and build all the binaries for your platform and copy them into the `bin` directory.
+For Windows, we don't have an automated build script yet, so please follow the next commands (in minGW or Powershell), or try `dev.bat` but without warranty so far.
+```bat
+mkdir dev
+git clone https://github.com/scionproto/scion.git
+cd scion
+git checkout f0d570b1cdf7cfd374abb5efc91aa68cc489ee0d
+
+# Build windows binaries 
+go build -o ../../bin ./router/... ./control/... ./dispatcher/... ./daemon/... ./scion/... ./scion-pki/... ./gateway/...
+cd ../../
+
+# Build orchestrator
+go build
+```
 
 ## Run an example
 Choose one of the examples and copy the content of the example folder into a `./config` folder, e.g. to run a full core AS including CA do the following:
