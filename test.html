@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SCION Bootstrap Server</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        // Check the user's color scheme preference and set the theme on page load
+        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+
+        // Function to toggle between dark and light mode
+        function toggleTheme() {
+            if (document.documentElement.classList.contains('dark')) {
+                document.documentElement.classList.remove('dark');
+                localStorage.theme = 'light';
+            } else {
+                document.documentElement.classList.add('dark');
+                localStorage.theme = 'dark';
+            }
+        }
+
+        // Function to detect the OS based on the user agent
+        function detectOS() {
+            const userAgent = navigator.userAgent.toLowerCase();
+
+            if (userAgent.indexOf('win') !== -1) {
+                return 'windows';
+            } else if (userAgent.indexOf('mac') !== -1) {
+                if (userAgent.indexOf('arm') !== -1) {
+                    return 'macos-arm64'; // Apple Silicon Macs (arm64)
+                } else {
+                    return 'macos-amd64'; // Intel-based Macs (amd64)
+                }
+            } else if (userAgent.indexOf('linux') !== -1) {
+                return 'linux';
+            }
+            return 'unknown'; // In case OS cannot be detected
+        }
+
+        // Function to automatically set the OS dropdown based on detected OS
+        function setOSDropdown() {
+            const osSelect = document.getElementById('os-select');
+            const detectedOS = detectOS();
+
+            // Set the dropdown value based on detected OS
+            if (detectedOS !== 'unknown') {
+                osSelect.value = detectedOS;
+            }
+        }
+    </script>
+</head>
+
+<body class="bg-gray-100 dark:bg-gray-900 min-h-screen flex items-center justify-center" onload="setOSDropdown()">
+    <div class="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-lg max-w-md w-full text-center">
+        <!-- Headline -->
+        <h1 class="text-3xl font-bold mb-6 text-gray-900 dark:text-gray-100">SCION Bootstrap Server</h1>
+        <h1 class="text-xl font-bold mb-6 text-gray-900 dark:text-gray-100">SCION AS: 71-2:0:4a</h1>
+
+        <!-- Operating System Dropdown -->
+        <div class="mb-6">
+            <label for="os-select" class="block text-left text-gray-700 dark:text-gray-300 font-semibold mb-2">Select
+                your Operating System:</label>
+            <select id="os-select"
+                class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100">
+                <option value="windows">Windows (amd64)</option>
+                <option value="linux">Linux (amd64)</option>
+                <option value="macos-amd64">MacOS (amd64)</option>
+                <option value="macos-arm64">MacOS (arm64)</option>
+            </select>
+        </div>
+
+        <!-- Download Button -->
+        <button id="download-btn"
+            class="bg-blue-500 text-white py-3 px-6 rounded-lg hover:bg-blue-600 dark:bg-blue-700 dark:hover:bg-blue-800 transition-colors">
+            Download SCION Tooling
+        </button>
+
+        <!-- Dark/Light Mode Toggle -->
+        <div class="mt-6">
+            <button onclick="toggleTheme()"
+                class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors">
+                Toggle Dark/Light Mode
+            </button>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('download-btn').addEventListener('click', function () {
+            // Get the selected OS from the dropdown
+            const selectedOS = document.getElementById('os-select').value;
+
+            // Set the download URL based on the selected OS
+            let downloadUrl = '';
+            switch (selectedOS) {
+                case 'windows':
+                    downloadUrl = 'https://example.com/scion-tooling-windows-amd64.zip';
+                    break;
+                case 'linux':
+                    downloadUrl = 'https://example.com/scion-tooling-linux-amd64.zip';
+                    break;
+                case 'macos-amd64':
+                    downloadUrl = 'https://example.com/scion-tooling-macos-amd64.zip';
+                    break;
+                case 'macos-arm64':
+                    downloadUrl = 'https://example.com/scion-tooling-macos-arm64.zip';
+                    break;
+                default:
+                    alert('Please select a valid operating system.');
+                    return;
+            }
+
+            // Redirect the user to the download URL
+            window.location.href = downloadUrl;
+        });
+    </script>
+</body>
+
+</html>
