@@ -57,7 +57,7 @@ For Windows, we don't have an automated build script yet, so please follow the n
 mkdir dev
 git clone https://github.com/scionproto/scion.git
 cd scion
-git checkout f0d570b1cdf7cfd374abb5efc91aa68cc489ee0d
+git checkout v0.12.0
 
 # Build windows binaries 
 go build -o ../../bin ./router/... ./control/... ./dispatcher/... ./daemon/... ./scion/... ./scion-pki/... ./gateway/...

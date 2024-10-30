@@ -18,7 +18,7 @@ git clone https://github.com/scionproto/scion.git
 cd scion
 
 :: Checkout the specific commit
-git checkout f0d570b1cdf7cfd374abb5efc91aa68cc489ee0d
+git checkout v0.12.0
 
 :: Build each component
 set CGO_ENABLED=0
