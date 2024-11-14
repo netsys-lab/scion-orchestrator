@@ -1,6 +1,8 @@
 module github.com/netsys-lab/scion-orchestrator
 
-go 1.22
+go 1.22.7
+
+toolchain go1.22.9
 
 // toolchain go1.22.4
 
@@ -9,9 +11,10 @@ require (
 	github.com/go-chi/chi v1.5.5
 	github.com/go-ozzo/ozzo-validation/v4 v4.3.0
 	github.com/golang-jwt/jwt/v4 v4.5.0
-	github.com/jessevdk/go-flags v1.5.0
+	github.com/jessevdk/go-flags v1.6.1
+	github.com/netsys-lab/scion-pila v0.0.1
 	github.com/pelletier/go-toml/v2 v2.2.2
-	github.com/scionproto/scion v0.11.0
+	github.com/scionproto/scion v0.12.0
 	golang.org/x/net v0.25.0
 	golang.org/x/sync v0.8.0
 )
@@ -31,6 +34,7 @@ require (
 	github.com/go-playground/universal-translator v0.18.1 // indirect
 	github.com/go-playground/validator/v10 v10.20.0 // indirect
 	github.com/goccy/go-json v0.10.2 // indirect
+	github.com/google/gopacket v1.1.19 // indirect
 	github.com/iancoleman/strcase v0.3.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/klauspost/cpuid/v2 v2.2.7 // indirect
@@ -49,8 +53,11 @@ require (
 	go.uber.org/zap v1.27.0 // indirect
 	golang.org/x/arch v0.8.0 // indirect
 	golang.org/x/crypto v0.23.0 // indirect
-	golang.org/x/sys v0.20.0 // indirect
+	golang.org/x/sys v0.21.0 // indirect
 	golang.org/x/text v0.15.0 // indirect
 	google.golang.org/protobuf v1.34.1 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
+
+
+replace github.com/netsys-lab/scion-pila => ../scion-pila

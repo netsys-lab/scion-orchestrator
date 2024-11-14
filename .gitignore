@@ -40,3 +40,5 @@ integration/Host150/config/certs/
 
 bin_latest/
 config_latest/
+
+bin_release

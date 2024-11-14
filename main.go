@@ -11,9 +11,9 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/jessevdk/go-flags"
 	"golang.org/x/sync/errgroup"
 
+	"github.com/jessevdk/go-flags"
 	"github.com/netsys-lab/scion-orchestrator/conf"
 	"github.com/netsys-lab/scion-orchestrator/environment"
 	"github.com/netsys-lab/scion-orchestrator/pkg/apiv1"
@@ -22,6 +22,7 @@ import (
 	"github.com/netsys-lab/scion-orchestrator/pkg/fileops"
 	"github.com/netsys-lab/scion-orchestrator/pkg/metrics"
 	"github.com/netsys-lab/scion-orchestrator/pkg/scionca"
+	scionpila "github.com/netsys-lab/scion-pila"
 )
 
 var opts struct {
@@ -234,6 +235,21 @@ func runBackgroundServices(env *environment.HostEnvironment, config *conf.Config
 		if !config.ServiceConfig.DisableBootstrapServer {
 			eg.Go(func() error {
 				return bootstrap.RunBootstrapService(env.ConfigPath, config.Bootstrap.Server, config)
+			})
+		}
+
+		if !config.ServiceConfig.DisablePilaServer && config.Pila.Server != "" {
+			fmt.Println(config.Pila)
+			eg.Go(func() error {
+				log.Println("[Main] Starting PILA server for endhost certificates...")
+				scionPilaConfig := &scionpila.SCIONPilaConfig{
+					Server:         config.Pila.Server,
+					CAKeyPath:      config.Pila.CAKeyPath,
+					CACertPath:     config.Pila.CACertPath,
+					AllowedSubnets: config.Pila.AllowedSubnets,
+				}
+				server := scionpila.NewSCIONPilaServer(scionPilaConfig)
+				return server.Run()
 			})
 		}
 

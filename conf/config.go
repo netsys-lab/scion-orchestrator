@@ -3,6 +3,7 @@ package conf
 import (
 	"os"
 
+	scionpila "github.com/netsys-lab/scion-pila"
 	"github.com/pelletier/go-toml/v2"
 )
 
@@ -11,10 +12,11 @@ type Config struct {
 	Mode          string
 	Bootstrap     Bootstrap `toml:"bootstrap,omitempty"`
 	Metrics       Metrics
-	IsdAs         string        `toml:"isd_as,omitempty"`
-	Ca            CA            `toml:"ca,omitempty"`
-	ServiceConfig ServiceConfig `toml:"service_config,omitempty"`
-	Api           Api           `toml:"api,omitempty"`
+	IsdAs         string                    `toml:"isd_as,omitempty"`
+	Ca            CA                        `toml:"ca,omitempty"`
+	ServiceConfig ServiceConfig             `toml:"service_config,omitempty"`
+	Api           Api                       `toml:"api,omitempty"`
+	Pila          scionpila.SCIONPilaConfig `toml:"pila,omitempty"`
 }
 
 type Api struct {
@@ -39,6 +41,7 @@ type ServiceConfig struct {
 	DisableDaemon          bool `toml:"disable_daemon,omitempty"`
 	DisableDispatcher      bool `toml:"disable_dispatcher,omitempty"`
 	DisableBootstrapServer bool `toml:"disable_bootstrap_server,omitempty"`
+	DisablePilaServer      bool `toml:"disable_pila_server,omitempty"`
 	DisableCertRenewal     bool `toml:"disable_cert_renewal,omitempty"`
 }
 
@@ -61,6 +64,7 @@ func NewConfig() *Config {
 			Clients:           []string{},
 		},
 		ServiceConfig: ServiceConfig{},
+		Pila:          scionpila.SCIONPilaConfig{},
 	}
 }
 

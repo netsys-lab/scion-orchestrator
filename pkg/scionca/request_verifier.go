@@ -37,16 +37,16 @@ func VerifyCMSSignedRenewalRequest(ctx context.Context,
 
 	ci, err := protocol.ParseContentInfo(req)
 	if err != nil {
-		return nil, serrors.WrapStr("parsing ContentInfo", err)
+		return nil, serrors.Wrap("parsing ContentInfo", err)
 	}
 	sd, err := ci.SignedDataContent()
 	if err != nil {
-		return nil, serrors.WrapStr("parsing SignedData", err)
+		return nil, serrors.Wrap("parsing SignedData", err)
 	}
 
 	chain, err := ExtractChain(sd)
 	if err != nil {
-		return nil, serrors.WrapStr("extracting signing certificate chain", err)
+		return nil, serrors.Wrap("extracting signing certificate chain", err)
 	}
 
 	if err := r.VerifySignature(ctx, sd, chain); err != nil {
@@ -55,12 +55,12 @@ func VerifyCMSSignedRenewalRequest(ctx context.Context,
 
 	pld, err := sd.EncapContentInfo.EContentValue()
 	if err != nil {
-		return nil, serrors.WrapStr("reading payload", err)
+		return nil, serrors.Wrap("reading payload", err)
 	}
 
 	csr, err := x509.ParseCertificateRequest(pld)
 	if err != nil {
-		return nil, serrors.WrapStr("parsing CSR", err)
+		return nil, serrors.Wrap("parsing CSR", err)
 	}
 
 	return csr, nil // r.processCSR(csr, chain[0])
@@ -90,26 +90,26 @@ func ExtractAndVerifyCsr(trcPath string, bts []byte, file *os.File) (*x509.Certi
 func DecodeSignedTRC(raw []byte) (cppki.SignedTRC, error) {
 	ci, err := protocol.ParseContentInfo(raw)
 	if err != nil {
-		return cppki.SignedTRC{}, serrors.WrapStr("error parsing ContentInfo", err)
+		return cppki.SignedTRC{}, serrors.Wrap("error parsing ContentInfo", err)
 	}
 	sd, err := ci.SignedDataContent()
 	if err != nil {
-		return cppki.SignedTRC{}, serrors.WrapStr("error parsing SignedData", err)
+		return cppki.SignedTRC{}, serrors.Wrap("error parsing SignedData", err)
 	}
 	if sd.Version != 1 {
 		return cppki.SignedTRC{}, serrors.New("unsupported SignedData version", "version", 1)
 	}
 	if !sd.EncapContentInfo.IsTypeData() {
-		return cppki.SignedTRC{}, serrors.WrapStr("unsupported EncapContentInfo type", err,
+		return cppki.SignedTRC{}, serrors.Wrap("unsupported EncapContentInfo type", err,
 			"type", sd.EncapContentInfo.EContentType)
 	}
 	praw, err := sd.EncapContentInfo.EContentValue()
 	if err != nil {
-		return cppki.SignedTRC{}, serrors.WrapStr("error reading raw payload", err)
+		return cppki.SignedTRC{}, serrors.Wrap("error reading raw payload", err)
 	}
 	trc, err := cppki.DecodeTRC(praw)
 	if err != nil {
-		return cppki.SignedTRC{}, serrors.WrapStr("error parsing TRC payload", err)
+		return cppki.SignedTRC{}, serrors.Wrap("error parsing TRC payload", err)
 	}
 	return cppki.SignedTRC{Raw: raw, TRC: trc, SignerInfos: sd.SignerInfos}, nil
 }
@@ -185,16 +185,16 @@ func (r RequestVerifier) VerifyCMSSignedRenewalRequest(ctx context.Context,
 
 	ci, err := protocol.ParseContentInfo(req)
 	if err != nil {
-		return nil, serrors.WrapStr("parsing ContentInfo", err)
+		return nil, serrors.Wrap("parsing ContentInfo", err)
 	}
 	sd, err := ci.SignedDataContent()
 	if err != nil {
-		return nil, serrors.WrapStr("parsing SignedData", err)
+		return nil, serrors.Wrap("parsing SignedData", err)
 	}
 
 	chain, err := ExtractChain(sd)
 	if err != nil {
-		return nil, serrors.WrapStr("extracting signing certificate chain", err)
+		return nil, serrors.Wrap("extracting signing certificate chain", err)
 	}
 
 	if err := r.VerifySignature(ctx, sd, chain); err != nil {
@@ -203,12 +203,12 @@ func (r RequestVerifier) VerifyCMSSignedRenewalRequest(ctx context.Context,
 
 	pld, err := sd.EncapContentInfo.EContentValue()
 	if err != nil {
-		return nil, serrors.WrapStr("reading payload", err)
+		return nil, serrors.Wrap("reading payload", err)
 	}
 
 	csr, err := x509.ParseCertificateRequest(pld)
 	if err != nil {
-		return nil, serrors.WrapStr("parsing CSR", err)
+		return nil, serrors.Wrap("parsing CSR", err)
 	}
 
 	return r.processCSR(csr, chain[0])
@@ -232,14 +232,14 @@ func (r RequestVerifier) VerifySignature(
 	si := sd.SignerInfos[0]
 	signer, err := si.FindCertificate(chain)
 	if err != nil {
-		return serrors.WrapStr("selecting client certificate", err)
+		return serrors.Wrap("selecting client certificate", err)
 	}
 	if signer != chain[0] {
 		return serrors.New("not signed with AS certificate",
 			"common_name", signer.Subject.CommonName)
 	}
 	if err := r.verifyClientChain(ctx, chain); err != nil {
-		return serrors.WrapStr("verifying client chain", err)
+		return serrors.Wrap("verifying client chain", err)
 	}
 
 	if !sd.EncapContentInfo.IsTypeData() {
@@ -248,11 +248,11 @@ func (r RequestVerifier) VerifySignature(
 	}
 	pld, err := sd.EncapContentInfo.EContentValue()
 	if err != nil {
-		return serrors.WrapStr("reading payload", err)
+		return serrors.Wrap("reading payload", err)
 	}
 
 	if err := verifySignerInfo(pld, chain[0], si); err != nil {
-		return serrors.WrapStr("verifying signer info", err)
+		return serrors.Wrap("verifying signer info", err)
 	}
 
 	return nil
@@ -266,7 +266,7 @@ func (r RequestVerifier) verifyClientChain(ctx context.Context, chain []*x509.Ce
 
 	trc, err := r.TRCFetcher.SignedTRC(ctx, ia.ISD())
 	if err != nil {
-		return serrors.WrapStr("loading TRC to verify client chain", err)
+		return serrors.Wrap("loading TRC to verify client chain", err)
 	}
 	if trc.IsZero() {
 		return serrors.New("TRC not found", "isd", ia.ISD())
@@ -280,12 +280,12 @@ func (r RequestVerifier) verifyClientChain(ctx context.Context, chain []*x509.Ce
 		// If the the previous TRC is in grace period the CA certificate of the chain might
 		// have been issued with a previous Root. Try verifying with the TRC in grace period.
 		if now.After(trc.TRC.GracePeriodEnd()) {
-			return serrors.WrapStr("verifying client chain", err)
+			return serrors.Wrap("verifying client chain", err)
 		}
 		graceID := trc.TRC.ID
 		graceID.Serial--
 		if err := r.verifyWithGraceTRC(ctx, now, graceID.ISD, chain); err != nil {
-			return serrors.WrapStr("verifying client chain with TRC in grace period "+
+			return serrors.Wrap("verifying client chain with TRC in grace period "+
 				"after verification failure with latest TRC", err,
 				"trc_id", trc.TRC.ID,
 				"grace_trc_id", graceID,
@@ -305,7 +305,7 @@ func (r RequestVerifier) verifyWithGraceTRC(
 
 	trc, err := r.TRCFetcher.SignedTRC(ctx, id)
 	if err != nil {
-		return serrors.WrapStr("loading TRC in grace period", err)
+		return serrors.Wrap("loading TRC in grace period", err)
 	}
 	if trc.IsZero() {
 		return serrors.New("TRC in grace period not found")
@@ -318,7 +318,7 @@ func (r RequestVerifier) verifyWithGraceTRC(
 	}
 	verifyOptions := cppki.VerifyOptions{TRC: []*cppki.TRC{&trc.TRC}}
 	if err := cppki.VerifyChain(chain, verifyOptions); err != nil {
-		return serrors.WrapStr("verifying client chain", err)
+		return serrors.Wrap("verifying client chain", err)
 	}
 	return nil
 }
@@ -350,18 +350,18 @@ func (r RequestVerifier) processCSR(csr *x509.CertificateRequest,
 
 	csrIA, err := cppki.ExtractIA(csr.Subject)
 	if err != nil {
-		return nil, serrors.WrapStr("extracting ISD-AS from CSR", err)
+		return nil, serrors.Wrap("extracting ISD-AS from CSR", err)
 	}
 	chainIA, err := cppki.ExtractIA(cert.Subject)
 	if err != nil {
-		return nil, serrors.WrapStr("extracting ISD-AS from certificate chain", err)
+		return nil, serrors.Wrap("extracting ISD-AS from certificate chain", err)
 	}
 	if !csrIA.Equal(chainIA) {
 		return nil, serrors.New("signing subject is different from CSR subject",
 			"csr_isd_as", csrIA, "chain_isd_as", chainIA)
 	}
 	if err := csr.CheckSignature(); err != nil {
-		return nil, serrors.WrapStr("invalid CSR signature", err)
+		return nil, serrors.Wrap("invalid CSR signature", err)
 	}
 	return csr, nil
 }
@@ -376,18 +376,18 @@ func ExtractChain(sd *protocol.SignedData) ([]*x509.Certificate, error) {
 		}
 	}
 	if err != nil {
-		return nil, serrors.WrapStr("parsing certificate chain", err)
+		return nil, serrors.Wrap("parsing certificate chain", err)
 	}
 
 	certType, err := cppki.ValidateCert(certs[0])
 	if err != nil {
-		return nil, serrors.WrapStr("checking certificate type", err)
+		return nil, serrors.Wrap("checking certificate type", err)
 	}
 	if certType == cppki.CA {
 		certs[0], certs[1] = certs[1], certs[0]
 	}
 	if err := cppki.ValidateChain(certs); err != nil {
-		return nil, serrors.WrapStr("validating chain", err)
+		return nil, serrors.Wrap("validating chain", err)
 	}
 	return certs, nil
 }
