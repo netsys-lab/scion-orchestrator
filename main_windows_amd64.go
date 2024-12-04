@@ -1,4 +1,3 @@
-//go:build !windows
 
 package main
 
@@ -55,7 +54,27 @@ func main() {
 		os.Exit(1)
 	}
 
-	
+	isService, err = svc.IsWindowsService()
+
+	var err error
+
+	executable := filepath.Base(os.Args[0])
+
+	if IsService {
+		a.elog, err = eventlog.Open(executable)
+		if err != nil {
+			return 1, err
+		}
+		err = svc.Run(executable, a)
+	} else {
+		a.elog = debug.New(shortName)
+		err = debug.Run(shortName, a)
+	}
+	if err != nil {
+		ec := err.(syscall.Errno)
+		return int(ec), a.svcErr
+	}
+
 }
 
 func realMain(args []string) {

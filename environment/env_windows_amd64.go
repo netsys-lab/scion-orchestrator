@@ -27,4 +27,5 @@ func init() {
 		DatabasePath:      filepath.Join(basePath, "database"),
 		LogPath:           filepath.Join(basePath, "logs"),
 	}
+
 }
