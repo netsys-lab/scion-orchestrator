@@ -98,6 +98,8 @@ func main() {
 	// catch SIGETRM or SIGINTERRUPT
 	signal.Notify(cancelChan, syscall.SIGTERM, syscall.SIGINT)
 
+	metrics.Status.Mode = config.Mode
+
 	if opts.Config != "" { // Run as a service
 		log.Println("[Main] Running as service")
 
@@ -159,7 +161,7 @@ func main() {
 			log.Fatal(err)
 		}
 		log.Println("[Main] All services stopped. AS Status is now:")
-		jsonStatus, _ := metrics.ASStatus.Json()
+		jsonStatus, _ := metrics.Status.Json()
 		fmt.Printf("%s", string(jsonStatus))
 	} else if restart {
 		// log.Println("[Main] Shutting down all service")
@@ -168,7 +170,7 @@ func main() {
 			log.Fatal(err)
 		}
 		log.Println("[Main] All services restarted. AS Status is now:")
-		jsonStatus, _ := metrics.ASStatus.Json()
+		jsonStatus, _ := metrics.Status.Json()
 		fmt.Printf("%s", string(jsonStatus))
 	}
 
@@ -223,6 +225,10 @@ func runBackgroundServices(env *environment.HostEnvironment, config *conf.Config
 			return metrics.RunStatusHTTPServer(config.Metrics.Server)
 		})
 
+		eg.Go(func() error {
+			return metrics.RunPrometheusHTTPServer(config.Metrics.Prometheus)
+		})
+
 		// Standalone does its own health check
 		if !run {
 			eg.Go(func() error {
@@ -255,6 +261,10 @@ func runBackgroundServices(env *environment.HostEnvironment, config *conf.Config
 
 		eg.Go(func() error {
 			return metrics.RunStatusHTTPServer(config.Metrics.Server)
+		})
+
+		eg.Go(func() error {
+			return metrics.RunPrometheusHTTPServer(config.Metrics.Prometheus)
 		})
 
 		log.Println("[Main] Running background services for CA")

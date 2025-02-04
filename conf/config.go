@@ -46,7 +46,8 @@ type ServiceConfig struct {
 }
 
 type Metrics struct {
-	Server string
+	Server     string
+	Prometheus string
 }
 
 func NewConfig() *Config {
@@ -56,7 +57,8 @@ func NewConfig() *Config {
 			Server: "",
 		},
 		Metrics: Metrics{
-			Server: "",
+			Server:     "127.0.0.1:33401",
+			Prometheus: "127.0.0.1:33402",
 		},
 		Ca: CA{
 			CertValidityHours: 72,

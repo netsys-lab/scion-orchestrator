@@ -55,11 +55,11 @@ func (s *ServiceHealthCheck) Run() {
 	for {
 		allServicesRunning := UpdateHealthCheck()
 		if allServicesRunning {
-			metrics.ASStatus.Status = metrics.SERVICE_STATUS_RUNNING
+			metrics.Status.Status = metrics.SERVICE_STATUS_RUNNING
 		} else {
-			metrics.ASStatus.Status = metrics.SERVICE_STATUS_ERROR
+			metrics.Status.Status = metrics.SERVICE_STATUS_ERROR
 		}
-		metrics.ASStatus.LastUpdated = time.Now().Format(time.RFC3339)
+		metrics.Status.LastUpdated = time.Now().Format(time.RFC3339)
 
 		// log.Println("[Env] Health Check: ", metrics.ASStatus)
 		time.Sleep(10 * time.Second)
@@ -76,13 +76,13 @@ func UpdateHealthCheck() bool {
 					Status:  metrics.SERVICE_STATUS_ERROR,
 					Message: "Service not running",
 				}
-				metrics.ASStatus.ControlServices[service.Name] = met
+				metrics.Status.ControlServices[service.Name] = met
 				allServicesRunning = false
 			} else {
 				met := metrics.ServiceStatus{
 					Status: metrics.SERVICE_STATUS_RUNNING,
 				}
-				metrics.ASStatus.ControlServices[service.Name] = met
+				metrics.Status.ControlServices[service.Name] = met
 			}
 		} else if strings.Contains(service.BinaryPath, "router") {
 			if !service.IsRunning() {
@@ -90,13 +90,13 @@ func UpdateHealthCheck() bool {
 					Status:  metrics.SERVICE_STATUS_ERROR,
 					Message: "Service not running",
 				}
-				metrics.ASStatus.BorderRouters[service.Name] = met
+				metrics.Status.BorderRouters[service.Name] = met
 				allServicesRunning = false
 			} else {
 				met := metrics.ServiceStatus{
 					Status: metrics.SERVICE_STATUS_RUNNING,
 				}
-				metrics.ASStatus.BorderRouters[service.Name] = met
+				metrics.Status.BorderRouters[service.Name] = met
 			}
 		} else if strings.Contains(service.BinaryPath, "dispatcher") {
 			if !service.IsRunning() {
@@ -104,13 +104,13 @@ func UpdateHealthCheck() bool {
 					Status:  metrics.SERVICE_STATUS_ERROR,
 					Message: "Service not running",
 				}
-				metrics.ASStatus.Dispatcher = met
+				metrics.Status.Dispatcher = met
 				allServicesRunning = false
 			} else {
 				met := metrics.ServiceStatus{
 					Status: metrics.SERVICE_STATUS_RUNNING,
 				}
-				metrics.ASStatus.Dispatcher = met
+				metrics.Status.Dispatcher = met
 			}
 		} else if strings.Contains(service.BinaryPath, "daemon") {
 			if !service.IsRunning() {
@@ -118,13 +118,13 @@ func UpdateHealthCheck() bool {
 					Status:  metrics.SERVICE_STATUS_ERROR,
 					Message: "Service not running",
 				}
-				metrics.ASStatus.Daemon = met
+				metrics.Status.Daemon = met
 				allServicesRunning = false
 			} else {
 				met := metrics.ServiceStatus{
 					Status: metrics.SERVICE_STATUS_RUNNING,
 				}
-				metrics.ASStatus.Daemon = met
+				metrics.Status.Daemon = met
 			}
 		} else if strings.Contains(service.BinaryPath, "scion-orchestrator") {
 			if !service.IsRunning() {
@@ -132,13 +132,13 @@ func UpdateHealthCheck() bool {
 					Status:  metrics.SERVICE_STATUS_ERROR,
 					Message: "Service not running",
 				}
-				metrics.ASStatus.BootstrapServer = met
+				metrics.Status.BootstrapServer = met
 				allServicesRunning = false
 			} else {
 				met := metrics.ServiceStatus{
 					Status: metrics.SERVICE_STATUS_RUNNING,
 				}
-				metrics.ASStatus.BootstrapServer = met
+				metrics.Status.BootstrapServer = met
 			}
 		}
 

@@ -89,7 +89,7 @@ func (cr *CertificateRenewer) RunRenew() error {
 		return fmt.Errorf("Failed to load certificate files, %s", err)
 	}
 
-	metrics.ASStatus.CertificateRenewal.Status = metrics.SERVICE_STATUS_RUNNING
+	metrics.Status.CertificateRenewal.Status = metrics.SERVICE_STATUS_RUNNING
 
 	log.Println("[Renewer] Checking cert ", cr.CertPath, " to expire within ", cr.RenewBeforeHours, " hours")
 	expiresSoon, err := cr.CheckIfCertExpiresSoon()
@@ -157,8 +157,8 @@ func (cr *CertificateRenewer) Run() {
 		err := cr.RunRenew()
 		if err != nil {
 			log.Println("[Renewer] Failed to renew AS certificate. Error: ", err)
-			metrics.ASStatus.CertificateRenewal.Status = metrics.SERVICE_STATUS_ERROR
-			metrics.ASStatus.CertificateRenewal.Message = err.Error()
+			metrics.Status.CertificateRenewal.Status = metrics.SERVICE_STATUS_ERROR
+			metrics.Status.CertificateRenewal.Message = err.Error()
 		}
 		time.Sleep(1 * time.Hour)
 	}

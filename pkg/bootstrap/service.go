@@ -18,7 +18,7 @@ func RunBootstrapService(configDir string, url string, config *conf.Config) erro
 		return RunBootstrapServer(configDir, url, config)
 	})
 
-	metrics.ASStatus.BootstrapServer.Status = metrics.SERVICE_STATUS_RUNNING
+	metrics.Status.BootstrapServer.Status = metrics.SERVICE_STATUS_RUNNING
 
 	return eg.Wait()
 }

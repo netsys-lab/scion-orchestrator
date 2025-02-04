@@ -11,7 +11,7 @@ func RunStatusHTTPServer(url string) error {
 	h.HandleFunc("/status", func(w http.ResponseWriter, r *http.Request) {
 		// Return the status of the services
 		w.Header().Set("Content-Type", "application/json")
-		statusBytes, err := ASStatus.Json()
+		statusBytes, err := Status.Json()
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return

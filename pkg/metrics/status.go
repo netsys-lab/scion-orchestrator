@@ -15,7 +15,8 @@ type ServiceStatus struct {
 	Message string
 }
 
-type ASServiceStatus struct {
+type HostStatus struct {
+	Mode               string
 	BootstrapServer    ServiceStatus
 	Dispatcher         ServiceStatus
 	Daemon             ServiceStatus
@@ -26,14 +27,14 @@ type ASServiceStatus struct {
 	LastUpdated        string
 }
 
-var ASStatus *ASServiceStatus
+var Status *HostStatus
 
-func (asStatus *ASServiceStatus) Json() ([]byte, error) {
-	return json.MarshalIndent(asStatus, "", "  ")
+func (hostStatus *HostStatus) Json() ([]byte, error) {
+	return json.MarshalIndent(hostStatus, "", "  ")
 }
 
 func init() {
-	ASStatus = &ASServiceStatus{
+	Status = &HostStatus{
 		BootstrapServer: ServiceStatus{
 			Status: SERVICE_STATUS_INIT,
 		},

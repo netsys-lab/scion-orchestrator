@@ -35,15 +35,15 @@ func (s *StandaloneService) Run() error {
 func (s *StandaloneService) UpdateMetrics() {
 	lowerName := strings.ToLower(s.Name)
 	if strings.Contains(lowerName, "daemon") {
-		metrics.ASStatus.Daemon.Status = metrics.SERVICE_STATUS_RUNNING
+		metrics.Status.Daemon.Status = metrics.SERVICE_STATUS_RUNNING
 	} else if strings.Contains(lowerName, "dispatcher") {
-		metrics.ASStatus.Dispatcher.Status = metrics.SERVICE_STATUS_RUNNING
+		metrics.Status.Dispatcher.Status = metrics.SERVICE_STATUS_RUNNING
 	} else if strings.Contains(lowerName, "control") {
-		metrics.ASStatus.ControlServices[s.Name] = metrics.ServiceStatus{
+		metrics.Status.ControlServices[s.Name] = metrics.ServiceStatus{
 			Status: metrics.SERVICE_STATUS_RUNNING,
 		}
 	} else if strings.Contains(lowerName, "router") {
-		metrics.ASStatus.BorderRouters[s.Name] = metrics.ServiceStatus{
+		metrics.Status.BorderRouters[s.Name] = metrics.ServiceStatus{
 			Status: metrics.SERVICE_STATUS_RUNNING,
 		}
 	}

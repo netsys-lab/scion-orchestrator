@@ -117,12 +117,12 @@ func runInstall(env *environment.HostEnvironment, config *conf.SCIONConfig, asCo
 	time.Sleep(5 * time.Second)
 	if !environment.UpdateHealthCheck() {
 		log.Println("[Main] Not all services started properly, see the details")
-		jsonStatus, _ := metrics.ASStatus.Json()
+		jsonStatus, _ := metrics.Status.Json()
 		fmt.Printf("%s", string(jsonStatus))
 
 		return fmt.Errorf("Not all services started properly, Please check the logs or try again")
 	} else {
-		jsonStatus, _ := metrics.ASStatus.Json()
+		jsonStatus, _ := metrics.Status.Json()
 		fmt.Printf("%s", string(jsonStatus))
 	}
 

@@ -59,5 +59,4 @@ require (
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
-
-replace github.com/netsys-lab/scion-pila => ../scion-pila
+// replace github.com/netsys-lab/scion-pila => ../scion-pila
