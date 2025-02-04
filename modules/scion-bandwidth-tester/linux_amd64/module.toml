@@ -1,0 +1,8 @@
+id = "scion-bandwidth-tester"
+title = "Scion Bandwidth Tester"
+description = "Module for testing bandwidth using the SCION protocol"
+version = "1.0.0"
+
+[service]
+command = "bwtestserver -s {scion_address}:34132"
+
