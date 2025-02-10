@@ -22,6 +22,7 @@ import (
 	"github.com/netsys-lab/scion-orchestrator/pkg/fileops"
 	"github.com/netsys-lab/scion-orchestrator/pkg/metrics"
 	"github.com/netsys-lab/scion-orchestrator/pkg/scionca"
+	"github.com/netsys-lab/scion-orchestrator/ui"
 	scionpila "github.com/netsys-lab/scion-pila"
 )
 
@@ -64,6 +65,9 @@ func main() {
 	}
 
 	config, err := conf.LoadConfig(configPath)
+	if err != nil {
+		log.Fatal("[Main] failed to load config ", config)
+	}
 	log.Println("[Main] scion-orchestrator config loaded successfully")
 
 	if fileops.FileOrFolderExists("config") {
@@ -98,7 +102,7 @@ func main() {
 	// catch SIGETRM or SIGINTERRUPT
 	signal.Notify(cancelChan, syscall.SIGTERM, syscall.SIGINT)
 
-	metrics.Status.Mode = config.Mode
+	metrics.Init()
 
 	if opts.Config != "" { // Run as a service
 		log.Println("[Main] Running as service")
@@ -220,14 +224,19 @@ func runBackgroundServices(env *environment.HostEnvironment, config *conf.Config
 	log.Println("[Main] Running background services")
 	var eg errgroup.Group
 
-	if config.Mode == "endhost" {
-		eg.Go(func() error {
-			return metrics.RunStatusHTTPServer(config.Metrics.Server)
-		})
+	eg.Go(func() error {
+		return metrics.RunStatusHTTPServer(config.Metrics.Server)
+	})
 
-		eg.Go(func() error {
-			return metrics.RunPrometheusHTTPServer(config.Metrics.Prometheus)
-		})
+	eg.Go(func() error {
+		return metrics.RunPrometheusHTTPServer(config.Metrics.Prometheus)
+	})
+
+	eg.Go(func() error {
+		return ui.RunUIHTTPServer(config.UI.Server)
+	})
+
+	if config.Mode == "endhost" {
 
 		// Standalone does its own health check
 		if !run {
@@ -258,14 +267,6 @@ func runBackgroundServices(env *environment.HostEnvironment, config *conf.Config
 				return server.Run()
 			})
 		}
-
-		eg.Go(func() error {
-			return metrics.RunStatusHTTPServer(config.Metrics.Server)
-		})
-
-		eg.Go(func() error {
-			return metrics.RunPrometheusHTTPServer(config.Metrics.Prometheus)
-		})
 
 		log.Println("[Main] Running background services for CA")
 

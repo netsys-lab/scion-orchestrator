@@ -17,6 +17,11 @@ type Config struct {
 	ServiceConfig ServiceConfig             `toml:"service_config,omitempty"`
 	Api           Api                       `toml:"api,omitempty"`
 	Pila          scionpila.SCIONPilaConfig `toml:"pila,omitempty"`
+	UI            UI                        `toml:"ui,omitempty"`
+}
+
+type UI struct {
+	Server string
 }
 
 type Api struct {
@@ -70,6 +75,9 @@ func NewConfig() *Config {
 		},
 		ServiceConfig: ServiceConfig{},
 		Pila:          scionpila.SCIONPilaConfig{},
+		UI: UI{
+			Server: "127.0.0.1:8180",
+		},
 	}
 }
 

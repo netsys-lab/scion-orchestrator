@@ -33,7 +33,7 @@ func (hostStatus *HostStatus) Json() ([]byte, error) {
 	return json.MarshalIndent(hostStatus, "", "  ")
 }
 
-func init() {
+func Init() {
 	Status = &HostStatus{
 		BootstrapServer: ServiceStatus{
 			Status: SERVICE_STATUS_INIT,
