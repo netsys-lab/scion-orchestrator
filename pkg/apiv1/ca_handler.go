@@ -2,6 +2,7 @@ package apiv1
 
 import (
 	"io/ioutil"
+	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -36,7 +37,7 @@ func SignCertificateByCSRHandler(eng *gin.RouterGroup, isdAS string, configDir s
 		}
 
 		// Get a file name to store the csr
-		csrFile, err := fileops.GetTempFileWithSuffix(".csr")
+		csrFile, err := fileops.CreateTempFileWithSuffix(".csr")
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not create the CSR file"})
 			return
@@ -59,8 +60,11 @@ func SignCertificateByCSRHandler(eng *gin.RouterGroup, isdAS string, configDir s
 
 		err = ca.IssueCertificateFromCSR(csrFile.Name(), certFile, certIsd, certAs)
 		if err != nil {
+			log.Println("[CA] Error issuing certificate: ", err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not issue the certificate"})
 			return
 		}
+
+		c.File(certFile)
 	})
 }

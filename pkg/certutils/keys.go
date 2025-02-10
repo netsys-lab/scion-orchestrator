@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 )
@@ -62,7 +63,7 @@ func EnsureASPrivateKeyExists(configDir, isdAs string) error {
 	if _, err := os.Stat(keyPath); os.IsNotExist(err) {
 		log.Println("[Crypto] AS private key does not exist. Generating a new ECDSA key with p-256 ...")
 		// Generate a new AS private key
-		key, err := GenerateEcdsaPrivateKey("p256")
+		/*key, err := GenerateEcdsaPrivateKey("p256")
 		if err != nil {
 			return fmt.Errorf("failed to generate AS private key: %v", err)
 		}
@@ -77,7 +78,14 @@ func EnsureASPrivateKeyExists(configDir, isdAs string) error {
 		err = WritePrivateKeyToFile(keyPEM, keyPath)
 		if err != nil {
 			return fmt.Errorf("failed to save AS private key: %v", err)
+		}*/
+
+		cmd := exec.Command("scion-pki", "key", "private", keyPath)
+		out, err := cmd.CombinedOutput()
+		if err != nil {
+			return fmt.Errorf("failed to create AS private key: %v: %s", err, string(out))
 		}
+
 		log.Println("[Crypto] New AS private key saved to", keyPath)
 	} else {
 		log.Println("[Crypto] AS private key already exists, checking if it is valid ...")
@@ -123,6 +131,12 @@ func LoadPrivateKey(filename string) (*ecdsa.PrivateKey, error) {
 }
 
 func WritePrivateKeyToFile(pemEncodedData []byte, file string) error {
+
+	// Ensure directory exists
+	if err := os.MkdirAll(filepath.Dir(file), 0700); err != nil {
+		return fmt.Errorf("creating directory for private key: %w", err)
+	}
+
 	if err := os.WriteFile(file, pemEncodedData, 0600); err != nil {
 		return fmt.Errorf("writing private key to file: %w", err)
 	}

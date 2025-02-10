@@ -46,7 +46,7 @@ func RunApiServer(env *environment.HostEnvironment, config *conf.Config) error {
 	}
 
 	// Start Gin server with the newly generated leaf certificate
-
+	// TODO: locate this file properly
 	f, _ := os.Create(filepath.Join(env.LogPath, "gin.log"))
 	gin.DefaultWriter = io.MultiWriter(f)
 	r := gin.Default()
@@ -66,6 +66,8 @@ func RunApiServer(env *environment.HostEnvironment, config *conf.Config) error {
 	authorized := r.Group(API_PREFIX, gin.BasicAuth(accs))
 
 	GenerateCSRFromTemplateHandler(authorized, config.IsdAs, env.ConfigPath)
+	AddCertificateChainHandler(authorized, config.IsdAs, env.ConfigPath)
+	SignCertificateByCSRHandler(authorized, config.IsdAs, env.ConfigPath, config)
 
 	apiAddress := ":8443"
 	if config.Api.Address != "" {

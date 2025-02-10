@@ -1,14 +1,20 @@
 package apiv1
 
 import (
+	"bytes"
 	"encoding/json"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"os"
 	"os/exec"
+	"regexp"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/netsys-lab/scion-orchestrator/pkg/certutils"
+	"github.com/netsys-lab/scion-orchestrator/pkg/fileops"
+	"github.com/netsys-lab/scion-orchestrator/pkg/scionutils"
 )
 
 func GenerateCSRFromTemplateHandler(eng *gin.RouterGroup, isdAS string, configDir string) {
@@ -71,6 +77,9 @@ func AddCertificateChainHandler(eng *gin.RouterGroup, isdAS string, configDir st
 				CACertificate ...
 			 -----END CERTIFICATE-----
 		*/
+
+		log.Println("[CPPKI] Adding certificate chain")
+
 		// Read the body
 		// Write the body to a file
 		if c.Request.Body == nil {
@@ -84,11 +93,14 @@ func AddCertificateChainHandler(eng *gin.RouterGroup, isdAS string, configDir st
 			return
 		}
 
-		certChainFile, err := os.CreateTemp("/tmp/", "*.pem")
+		certChainFile, err := fileops.CreateTempFileWithSuffix(".pem")
+		// os.CreateTemp("/tmp/", "*.pem")
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not create the certificate chain file"})
 			return
 		}
+
+		bodyBytes = formatPEMString(string(bodyBytes))
 
 		_, err = certChainFile.Write(bodyBytes)
 		if err != nil {
@@ -98,12 +110,16 @@ func AddCertificateChainHandler(eng *gin.RouterGroup, isdAS string, configDir st
 
 		err = certutils.ValidateSCIONCertificateChain(certChainFile.Name())
 		if err != nil {
+			log.Println("[CPPKI] Could not validate the certificate chain: ", err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not validate the certificate chain"})
 			return
 		}
 
-		trcFile, err := certutils.GetLatestTRCForISD(configDir, isdAS)
+		isd := scionutils.GetISDFromISDAS(isdAS)
+
+		trcFile, err := certutils.GetLatestTRCForISD(configDir, isd)
 		if err != nil {
+			log.Println("[CPPKI] Could not get the latest TRC file: ", err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not get the latest TRC file"})
 			return
 		}
@@ -121,10 +137,13 @@ func AddCertificateChainHandler(eng *gin.RouterGroup, isdAS string, configDir st
 			return
 		}
 
-		err = os.Rename(certFileName, certFileName+".old")
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not backup the old AS certificate"})
-			return
+		if fileops.FileOrFolderExists(certFileName) {
+			err = os.Rename(certFileName, certFileName+".old")
+			if err != nil {
+				log.Println("[CPPKI] Could not backup the old AS certificate: ", err)
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not backup the old AS certificate"})
+				return
+			}
 		}
 
 		err = os.Rename(certChainFile.Name(), certFileName)
@@ -133,7 +152,45 @@ func AddCertificateChainHandler(eng *gin.RouterGroup, isdAS string, configDir st
 			return
 		}
 
+		log.Println("[CPPKI] Certificate chain added successfully")
+
 		c.JSON(http.StatusOK, gin.H{"message": "Certificate chain added successfully"})
 
 	})
+}
+
+func formatPEMString(pemStr string) []byte {
+	// Remove all existing newlines to process as a single string
+	pemStr = strings.ReplaceAll(pemStr, "\n", "")
+
+	// Regular expression to match multiple PEM certificates
+	pemRegex := regexp.MustCompile(`(-----BEGIN CERTIFICATE-----)([A-Za-z0-9+/=]+)(-----END CERTIFICATE-----)`)
+
+	// Buffer to store formatted PEM output
+	var formattedPem bytes.Buffer
+
+	// Find all certificate blocks
+	matches := pemRegex.FindAllStringSubmatch(pemStr, -1)
+	if len(matches) == 0 {
+		return nil // Return nil if no valid PEM found
+	}
+
+	for _, match := range matches {
+		beginMarker := match[1]
+		pemData := match[2]
+		endMarker := match[3]
+
+		// Reformat certificate block by inserting newlines every 64 characters
+		formattedPem.WriteString(beginMarker + "\n")
+		for i := 0; i < len(pemData); i += 64 {
+			end := i + 64
+			if end > len(pemData) {
+				end = len(pemData)
+			}
+			formattedPem.WriteString(pemData[i:end] + "\n")
+		}
+		formattedPem.WriteString(endMarker + "\n") // Separate multiple certs
+	}
+
+	return formattedPem.Bytes()
 }

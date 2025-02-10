@@ -21,9 +21,11 @@ func VerifySCIONCertificateChain(certFile string, trcFile string) error {
 // TODO: Windows Support
 func ValidateSCIONCertificateChain(certFile string) error {
 	cmd := exec.Command("scion-pki", "certificate", "validate", "--type", "chain", certFile)
-	_, err := cmd.CombinedOutput()
+	log.Println("[CertUtils] Validating certificate chain, ", cmd.String())
+	out, err := cmd.CombinedOutput()
 	if err != nil {
 		log.Println("[CertUtils] Could not validate the certificate chain: " + err.Error())
+		log.Println("[CertUtils] Output: " + string(out))
 		return err
 	}
 	return nil

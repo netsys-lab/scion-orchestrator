@@ -1,9 +1,9 @@
 package scionca
 
 import (
+	"bytes"
 	"crypto/ecdsa"
 	"crypto/rand"
-	"crypto/sha1"
 	"crypto/x509"
 	"crypto/x509/pkix"
 	"encoding/asn1"
@@ -14,9 +14,11 @@ import (
 	"math/big"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/netsys-lab/scion-orchestrator/pkg/fileops"
+	"github.com/scionproto/scion/pkg/scrypto/cppki"
 )
 
 type SCIONCertificateAuthority struct {
@@ -75,6 +77,8 @@ func (ca *SCIONCertificateAuthority) IssueCertificateFromCSR(csrFile string, dst
 	if err != nil {
 		return fmt.Errorf("Failed to read CSR: %v\n", err)
 	}
+	csrPEM = formatPEMString(string(csrPEM))
+
 	// Parse the CSR
 	block, _ := pem.Decode(csrPEM)
 	if block == nil || block.Type != "CERTIFICATE REQUEST" {
@@ -92,11 +96,14 @@ func (ca *SCIONCertificateAuthority) IssueCertificateFromCSR(csrFile string, dst
 	}
 
 	// Calculate the Subject Key Identifier
-	pubKeyBytes, err := x509.MarshalPKIXPublicKey(csr.PublicKey)
+	/*pubKeyBytes, err := x509.MarshalPKIXPublicKey(csr.PublicKey)
 	if err != nil {
 		return fmt.Errorf("failed to marshal public key: %v", err)
+	}*/
+	subjectKeyID, err := cppki.SubjectKeyID(csr.PublicKey)
+	if err != nil {
+		return fmt.Errorf("failed to calculate subject key ID: %v", err)
 	}
-	subjectKeyID := sha1.Sum(pubKeyBytes)
 
 	// Create a serial number for the certificate
 	serialNumber, err := rand.Int(rand.Reader, new(big.Int).Lsh(big.NewInt(1), 128))
@@ -176,4 +183,34 @@ func loadCertAndKey(certPEM, keyPEM []byte) (*x509.Certificate, *ecdsa.PrivateKe
 	}
 
 	return cert, key, nil
+}
+
+func formatPEMString(pemStr string) []byte {
+	// Remove existing newlines (if any) and extract the PEM content
+	pemStr = strings.ReplaceAll(pemStr, "\n", "")
+
+	// Ensure the BEGIN and END markers are preserved correctly
+	beginMarker := "-----BEGIN CERTIFICATE REQUEST-----"
+	endMarker := "-----END CERTIFICATE REQUEST-----"
+
+	// Extract the actual PEM data
+	pemData := strings.TrimPrefix(pemStr, beginMarker)
+	pemData = strings.TrimSuffix(pemData, endMarker)
+	pemData = strings.TrimSpace(pemData) // Remove extra spaces
+
+	// Reformat by inserting a newline every 64 characters
+	var formattedPem bytes.Buffer
+	formattedPem.WriteString(beginMarker + "\n")
+
+	for i := 0; i < len(pemData); i += 64 {
+		end := i + 64
+		if end > len(pemData) {
+			end = len(pemData)
+		}
+		formattedPem.WriteString(pemData[i:end] + "\n")
+	}
+
+	formattedPem.WriteString(endMarker + "\n")
+
+	return formattedPem.Bytes()
 }

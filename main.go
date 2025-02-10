@@ -271,7 +271,7 @@ func runBackgroundServices(env *environment.HostEnvironment, config *conf.Config
 
 		// TODO: Check which services do really need a control plane cert/key
 		// TODO: Need to fail here??
-		if len(scionConfig.ControlServices) > 0 || len(scionConfig.BorderRouters) > 0 {
+		if len(scionConfig.ControlServices) > 0 {
 			err := certutils.EnsureASPrivateKeyExists(env.ConfigPath, config.IsdAs)
 			if err != nil {
 				log.Println("[Main] Error ensuring AS private key exists: ", err)

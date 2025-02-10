@@ -26,7 +26,7 @@ func GetTempFileNameWithSuffix(suffix string) string {
 	return filepath.Join(dir, randomString(16)+suffix)
 }
 
-func GetTempFileWithSuffix(suffix string) (*os.File, error) {
+func CreateTempFileWithSuffix(suffix string) (*os.File, error) {
 	dir := os.TempDir()
-	return os.Open(filepath.Join(dir, randomString(16)+suffix))
+	return os.Create(filepath.Join(dir, randomString(16)+suffix))
 }

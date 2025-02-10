@@ -65,6 +65,9 @@ func NewConfig() *Config {
 			Server:            ":3000",
 			Clients:           []string{},
 		},
+		Api: Api{
+			Address: ":8843",
+		},
 		ServiceConfig: ServiceConfig{},
 		Pila:          scionpila.SCIONPilaConfig{},
 	}
