@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"os/signal"
@@ -13,6 +14,7 @@ import (
 
 	"golang.org/x/sync/errgroup"
 
+	"github.com/gin-gonic/gin"
 	"github.com/jessevdk/go-flags"
 	"github.com/netsys-lab/scion-orchestrator/conf"
 	"github.com/netsys-lab/scion-orchestrator/environment"
@@ -127,12 +129,6 @@ func main() {
 				log.Fatal(err)
 			}
 		}()
-		go func() {
-			err = runService(env, config)
-			if err != nil {
-				log.Fatal(err)
-			}
-		}()
 
 		log.Println("[Main] scion-orchestrator Service started, waiting for termination signal")
 		sig := <-cancelChan
@@ -232,9 +228,57 @@ func runBackgroundServices(env *environment.HostEnvironment, config *conf.Config
 		return metrics.RunPrometheusHTTPServer(config.Metrics.Prometheus)
 	})
 
-	eg.Go(func() error {
-		return ui.RunUIHTTPServer(config.UI.Server)
-	})
+	if len(config.Api.Users) == 0 {
+		log.Println("[Main] Warning: No users defined for HTTP access, API and UI can not be accessed")
+	} else {
+		log.Println("[Main] Starting API server...")
+
+		r := gin.Default()
+		// Start Gin server with the newly generated leaf certificate
+		// TODO: locate this file properly
+		f, _ := os.Create(filepath.Join(env.LogPath, "gin.log"))
+		gin.DefaultWriter = io.MultiWriter(f)
+
+		// })
+		eg.Go(func() error {
+
+			// eg.Go(func() error {
+			err := apiv1.RegisterRoutes(env, config, r)
+			if err != nil {
+				log.Println("[Main] Error registering API routes: ", err)
+				return err
+			}
+			// })
+
+			// eg.Go(func() error {
+			err = ui.RegisterRoutes(env, config, r)
+			if err != nil {
+				log.Println("[Main] Error registering UI routes: ", err)
+				return err
+			}
+
+			apiAddress := ":8443"
+			if config.Api.Address != "" {
+				apiAddress = config.Api.Address
+			}
+
+			log.Println("[Main] Starting API und UI server with TLS on", apiAddress)
+			certFile, keyFile, err := apiv1.SetupCertificates(env)
+			if err != nil {
+				log.Println("[Main] Error creating TLS Certificates of API and UI: ", err)
+				return err
+			}
+
+			// Start the server with the new certificate and private key
+			err = r.RunTLS(apiAddress, certFile, keyFile)
+			if err != nil {
+				log.Println("[Main] Failed to start TLS API/UI server: ", err)
+				return err
+			}
+
+			return nil
+		})
+	}
 
 	if config.Mode == "endhost" {
 
@@ -279,17 +323,8 @@ func runBackgroundServices(env *environment.HostEnvironment, config *conf.Config
 			}
 		}
 
-		if len(config.Api.Users) == 0 {
-			log.Println("[Main] Warning: No users defined for API, endpoints can not be accessed")
-		} else {
-			log.Println("[Main] Starting API server...")
-			eg.Go(func() error {
-				return apiv1.RunApiServer(env, config)
-			})
-		}
-
 		// log.Println(config.Ca.Clients)
-		if config.Ca.Clients != nil && len(config.Ca.Clients) > 0 {
+		if len(config.Ca.Clients) > 0 {
 			eg.Go(func() error {
 				// TODO: Only run if core AS
 				parts := strings.Split(config.IsdAs, "-")
@@ -330,11 +365,4 @@ func runBackgroundServices(env *environment.HostEnvironment, config *conf.Config
 	}
 
 	return eg.Wait()
-}
-
-func runService(env *environment.HostEnvironment, config *conf.Config) error {
-	//log.Println("[Main] Running service")
-	//time.Sleep(30 * time.Second)
-
-	return nil
 }

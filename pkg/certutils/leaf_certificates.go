@@ -7,8 +7,8 @@ import (
 	"crypto/x509/pkix"
 	"encoding/pem"
 	"fmt"
-	"io/ioutil"
 	"math/big"
+	"os"
 	"time"
 )
 
@@ -16,6 +16,9 @@ import (
 func GenerateLeafCertificate(commonName string, validityDays int) (*x509.Certificate, *rsa.PrivateKey, error) {
 	// Generate a new RSA private key
 	privateKey, err := GenerateRsaPrivateKey()
+	if err != nil {
+		return nil, nil, fmt.Errorf("failed to generate private key: %v", err)
+	}
 
 	// Create a serial number for the certificate
 	serialNumber, err := rand.Int(rand.Reader, new(big.Int).Lsh(big.NewInt(1), 128))
@@ -57,7 +60,7 @@ func GenerateLeafCertificate(commonName string, validityDays int) (*x509.Certifi
 func SaveCertificate(certPath string, cert *x509.Certificate, keyPath string, key *rsa.PrivateKey) error {
 	// Save the certificate to a PEM file
 	certPEM := pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: cert.Raw})
-	err := ioutil.WriteFile(certPath, certPEM, 0644)
+	err := os.WriteFile(certPath, certPEM, 0644)
 	if err != nil {
 		return fmt.Errorf("failed to write certificate to file: %v", err)
 	}
@@ -65,11 +68,43 @@ func SaveCertificate(certPath string, cert *x509.Certificate, keyPath string, ke
 
 	// Save the private key to a PEM file
 	keyPEM := pem.EncodeToMemory(&pem.Block{Type: "RSA PRIVATE KEY", Bytes: x509.MarshalPKCS1PrivateKey(key)})
-	err = ioutil.WriteFile(keyPath, keyPEM, 0600)
+	err = os.WriteFile(keyPath, keyPEM, 0600)
 	if err != nil {
 		return fmt.Errorf("failed to write private key to file: %v", err)
 	}
 	fmt.Println("Private key saved to", keyPath)
 
+	return nil
+}
+
+// CheckCertificateExpiration reads a PEM-encoded certificate and checks if it's expired
+func CheckCertificateExpiration(certPath string) error {
+	// Read the certificate file
+	certData, err := os.ReadFile(certPath)
+	if err != nil {
+		return fmt.Errorf("failed to read certificate file: %v", err)
+	}
+
+	// Decode the PEM block
+	block, _ := pem.Decode(certData)
+	if block == nil {
+		return fmt.Errorf("failed to parse PEM block from file")
+	}
+
+	// Parse the X.509 certificate
+	cert, err := x509.ParseCertificate(block.Bytes)
+	if err != nil {
+		return fmt.Errorf("failed to parse certificate: %v", err)
+	}
+
+	// Get current time
+	now := time.Now()
+
+	// Check expiration
+	if now.After(cert.NotAfter) {
+		return fmt.Errorf("certificate expired on %v", cert.NotAfter)
+	}
+
+	// fmt.Printf("Certificate is valid. Expiration date: %v\n", cert.NotAfter)
 	return nil
 }

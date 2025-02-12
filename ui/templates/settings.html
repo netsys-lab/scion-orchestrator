@@ -10,17 +10,13 @@
     <script>
         async function fetchStatus() {
             try {
-                let response = await fetch('/api/v1/status'); // Modify endpoint accordingly
+                let response = await fetch('/status.json'); // Modify endpoint accordingly
                 let data = await response.json();
                 return data;
             } catch (error) {
                 console.error("Error fetching status:", error);
                 return null;
             }
-        }
-
-        window.onload = function () {
-            fetchStatus();
         }
     </script>
     <script src="https://unpkg.com/@tailwindcss/browser@4"></script>

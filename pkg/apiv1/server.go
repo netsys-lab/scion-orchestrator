@@ -5,7 +5,6 @@ import (
 	"crypto/x509"
 	"encoding/pem"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -23,37 +22,47 @@ const (
 	API_PREFIX = "/api/v1/"
 )
 
-func RunApiServer(env *environment.HostEnvironment, config *conf.Config) error {
-	// Generate a new leaf certificate and private key
-	leafCert, leafKey, err := certutils.GenerateLeafCertificate("SCION-Orchestrator API", 365)
-	if err != nil {
-		log.Fatalf("Failed to generate leaf certificate: %v", err)
-	}
+func SetupCertificates(env *environment.HostEnvironment) (string, string, error) {
 
 	apiFolder := filepath.Join(env.ConfigPath, "api")
-	err = os.MkdirAll(apiFolder, 0755)
-	if err != nil {
-		return fmt.Errorf("Failed to create API folder: %v", err)
-	}
-
 	leafCertFile := filepath.Join(apiFolder, "leaf.crt")
 	leafKeyFile := filepath.Join(apiFolder, "leaf.key")
 
-	// Save the certificate and key to files
-	err = saveCertificate(leafCertFile, leafCert, leafKeyFile, leafKey)
-	if err != nil {
-		log.Fatalf("Failed to save leaf certificate: %v", err)
+	certsNotExistOrExpired := false
+	if _, err := os.Stat(leafCertFile); err != nil && os.IsNotExist(err) {
+		certsNotExistOrExpired = true
 	}
 
-	// Start Gin server with the newly generated leaf certificate
-	// TODO: locate this file properly
-	f, _ := os.Create(filepath.Join(env.LogPath, "gin.log"))
-	gin.DefaultWriter = io.MultiWriter(f)
-	r := gin.Default()
+	if !certsNotExistOrExpired && certutils.CheckCertificateExpiration(leafCertFile) != nil {
+		certsNotExistOrExpired = true
+	}
+	log.Println("[Api] Certificates exist and are not expired:", !certsNotExistOrExpired)
+	if certsNotExistOrExpired {
+		// Generate a new leaf certificate and private key
+		leafCert, leafKey, err := certutils.GenerateLeafCertificate("SCION-Orchestrator API", 365)
+		if err != nil {
+			log.Fatalf("Failed to generate leaf certificate: %v", err)
+		}
 
-	r.GET("/", func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{"status": "ok"})
-	})
+		err = os.MkdirAll(apiFolder, 0755)
+		if err != nil {
+			return "", "", fmt.Errorf("failed to create API folder: %v", err)
+		}
+
+		// Save the certificate and key to files
+		err = saveCertificate(leafCertFile, leafCert, leafKeyFile, leafKey)
+		if err != nil {
+			log.Fatalf("Failed to save leaf certificate: %v", err)
+		}
+
+		log.Println("[Api] New leaf certificate generated and saved")
+	}
+
+	return leafCertFile, leafKeyFile, nil
+
+}
+
+func RegisterRoutes(env *environment.HostEnvironment, config *conf.Config, r *gin.Engine) error {
 
 	accs := make(gin.Accounts)
 
@@ -64,23 +73,15 @@ func RunApiServer(env *environment.HostEnvironment, config *conf.Config) error {
 
 	// Apply the BasicAuth middleware to a specific route group
 	authorized := r.Group(API_PREFIX, gin.BasicAuth(accs))
+	authorized.GET("/", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{"status": "ok"})
+	})
 
 	GenerateCSRFromTemplateHandler(authorized, config.IsdAs, env.ConfigPath)
 	AddCertificateChainHandler(authorized, config.IsdAs, env.ConfigPath)
 	SignCertificateByCSRHandler(authorized, config.IsdAs, env.ConfigPath, config)
-
-	apiAddress := ":8443"
-	if config.Api.Address != "" {
-		apiAddress = config.Api.Address
-	}
-
-	log.Println("[Api] Starting server on", apiAddress)
-
-	// Start the server with the new certificate and private key
-	err = r.RunTLS(apiAddress, leafCertFile, leafKeyFile)
-	if err != nil {
-		log.Fatalf("Failed to start server: %v", err)
-	}
+	AddStatusHandler(authorized)
+	AddSettingsHandler(authorized, config)
 	return nil
 }
 

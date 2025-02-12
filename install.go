@@ -47,7 +47,7 @@ func runInstall(env *environment.HostEnvironment, config *conf.SCIONConfig, asCo
 		service, ok := environment.Services[config.Dispatcher.Name]
 		if !ok {
 			log.Println("[Install] Dispatcher Service not found in environment, name mismatch...")
-			return fmt.Errorf("Dispatcher Service not found in environment, name mismatch...")
+			return fmt.Errorf("dispatcher Service not found in environment, name mismatch")
 		}
 
 		err := service.Install()
@@ -63,7 +63,7 @@ func runInstall(env *environment.HostEnvironment, config *conf.SCIONConfig, asCo
 		service, ok := environment.Services[config.Daemon.Name]
 		if !ok {
 			log.Println("[Install] Dispatcher Service not found in environment, name mismatch...")
-			return fmt.Errorf("Daemon Service not found in environment, name mismatch...")
+			return fmt.Errorf("daemon Service not found in environment, name mismatch")
 		}
 
 		err = service.Install()
@@ -98,7 +98,7 @@ func runInstall(env *environment.HostEnvironment, config *conf.SCIONConfig, asCo
 	service, ok := environment.Services["scion-orchestrator"]
 	if !ok {
 		log.Println("[Install] SCION AS Service not found in environment, name mismatch...")
-		return fmt.Errorf("SCION AS Service not found in environment, name mismatch...")
+		return fmt.Errorf("orchestrator service found in environment, name mismatch")
 	}
 
 	err = service.Install()
@@ -120,7 +120,7 @@ func runInstall(env *environment.HostEnvironment, config *conf.SCIONConfig, asCo
 		jsonStatus, _ := metrics.Status.Json()
 		fmt.Printf("%s", string(jsonStatus))
 
-		return fmt.Errorf("Not all services started properly, Please check the logs or try again")
+		return fmt.Errorf("not all services started properly, Please check the logs or try again")
 	} else {
 		jsonStatus, _ := metrics.Status.Json()
 		fmt.Printf("%s", string(jsonStatus))
