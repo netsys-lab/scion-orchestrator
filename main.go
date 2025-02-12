@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"io"
 	"log"
 	"os"
 	"os/signal"
@@ -236,8 +235,8 @@ func runBackgroundServices(env *environment.HostEnvironment, config *conf.Config
 		r := gin.Default()
 		// Start Gin server with the newly generated leaf certificate
 		// TODO: locate this file properly
-		f, _ := os.Create(filepath.Join(env.LogPath, "gin.log"))
-		gin.DefaultWriter = io.MultiWriter(f)
+		//f, _ := os.Create(filepath.Join(env.LogPath, "gin.log"))
+		//gin.DefaultWriter = io.MultiWriter(f)
 
 		// })
 		eg.Go(func() error {

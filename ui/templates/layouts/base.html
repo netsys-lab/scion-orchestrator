@@ -1,3 +1,4 @@
+{{ define "base" }}
 <!DOCTYPE html>
 <html lang="en">
 
@@ -10,13 +11,17 @@
     <script>
         async function fetchStatus() {
             try {
-                let response = await fetch('/status.json'); // Modify endpoint accordingly
+                let response = await fetch('/api/v1/status'); // Modify endpoint accordingly
                 let data = await response.json();
                 return data;
             } catch (error) {
                 console.error("Error fetching status:", error);
                 return null;
             }
+        }
+
+        window.onload = function () {
+            fetchStatus();
         }
     </script>
     <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
@@ -313,6 +318,7 @@
         <div id="main-content" class="p-4">
             <div class="overflow-y-auto">
                 <!-- Add Main Content Here  -->
+                {{ block "content" . }}{{ end }}
             </div>
         </div>
     </div>
@@ -320,3 +326,4 @@
 </body>
 
 </html>
+{{ end }}

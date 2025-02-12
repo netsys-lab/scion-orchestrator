@@ -12,7 +12,7 @@ import (
 // RegisterRoutes sets up the routes using Gin
 func RegisterRoutes(env *environment.HostEnvironment, config *conf.Config, r *gin.Engine) error {
 	// Load HTML templates from the "ui/templates" directory
-	r.LoadHTMLGlob("ui/templates/*")
+	r.LoadHTMLGlob("ui/templates/**/*")
 
 	accs := make(gin.Accounts)
 
@@ -24,9 +24,16 @@ func RegisterRoutes(env *environment.HostEnvironment, config *conf.Config, r *gi
 	// Apply the BasicAuth middleware to a specific route group
 	authorized := r.Group("/", gin.BasicAuth(accs))
 
-	// Register routes with HTML rendering
-	authorized.GET("/", renderIndexPage)
-	authorized.GET("/settings", renderSettingsPage)
+	authorized.GET("/", func(c *gin.Context) {
+		c.HTML(http.StatusOK, "index.html", gin.H{
+			"title": "SCION Orchestrator",
+		})
+	})
+	authorized.GET("/settings", func(c *gin.Context) {
+		c.HTML(http.StatusOK, "settings.html", gin.H{
+			"title": "SCION Orchestrator",
+		})
+	})
 
 	// log.Println("[UI] Server running")
 	return nil
