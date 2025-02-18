@@ -12,6 +12,81 @@ import (
 	"time"
 )
 
+// CertDetails holds extracted certificate details
+type CertDetails struct {
+	Subject      pkix.Name    `json:"subject"`
+	Issuer       pkix.Name    `json:"issuer"`
+	SerialNumber string       `json:"serial_number"`
+	NotBefore    string       `json:"not_before"`
+	NotAfter     string       `json:"not_after"`
+	PublicKeyAlg string       `json:"public_key_algorithm"`
+	IsCA         bool         `json:"is_ca"`
+	Expired      bool         `json:"expired"`
+	Parent       *CertDetails `json:"parent,omitempty"`
+}
+
+// LoadCertificates reads a PEM file and extracts certificate details
+func GetASCertificateDetails(configDir string, isdAS string) ([]*CertDetails, error) {
+
+	filename, err := GetASCertificateFilename(configDir, isdAS)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get AS certificate filename: %w", err)
+	}
+
+	data, err := os.ReadFile(filename)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read file: %w", err)
+	}
+
+	var certs []*CertDetails
+	certMap := make(map[string]*CertDetails) // Map issuer -> certificate for parent linking
+
+	var block *pem.Block
+	for len(data) > 0 {
+		block, data = pem.Decode(data)
+		if block == nil {
+			break
+		}
+
+		if block.Type == "CERTIFICATE" {
+			cert, err := x509.ParseCertificate(block.Bytes)
+			if err != nil {
+				return nil, fmt.Errorf("failed to parse certificate: %w", err)
+			}
+
+			// Create CertDetails struct
+			certDetails := &CertDetails{
+				Subject:      cert.Subject,
+				Issuer:       cert.Issuer,
+				SerialNumber: cert.SerialNumber.String(),
+				NotBefore:    cert.NotBefore.String(),
+				NotAfter:     cert.NotAfter.String(),
+				PublicKeyAlg: cert.PublicKeyAlgorithm.String(),
+				IsCA:         cert.IsCA,
+				Expired:      cert.NotAfter.Before(cert.NotBefore),
+			}
+
+			// Store in map for parent lookup
+			certMap[cert.Subject.CommonName] = certDetails
+			certs = append(certs, certDetails)
+		}
+	}
+
+	returnCerts := make([]*CertDetails, 0)
+
+	// Link parent certificates
+	for _, cert := range certs {
+		if parent, exists := certMap[cert.Issuer.CommonName]; exists {
+			cert.Parent = parent
+			returnCerts = append(returnCerts, cert)
+		}
+	}
+
+	return returnCerts, nil
+
+	// return certificates, nil
+}
+
 // generateLeafCertificate generates a self-signed leaf certificate with a new private key
 func GenerateLeafCertificate(commonName string, validityDays int) (*x509.Certificate, *rsa.PrivateKey, error) {
 	// Generate a new RSA private key

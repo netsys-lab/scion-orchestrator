@@ -1,0 +1,195 @@
+{{ template "basetop" . }}
+
+
+<div class="flex w-full">
+    <div class="w-full">
+        <h1 class="text-lg font-bold text-on-surface dark:text-on-surface-dark mb-4">Certificate Signing Requests</h1>
+        <div class="flex mb-2 w-full max-w-md flex-col gap-1 text-on-surface dark:text-on-surface-dark">
+            <label for="textArea" class="w-fit pl-0.5 text-sm">Generate Certificate Signing Request</label>
+            <textarea id="textArea"
+                class="w-full rounded-radius border border-outline bg-surface-alt px-2.5 py-2 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-not-allowed disabled:opacity-75 dark:border-outline-dark dark:bg-surface-dark-alt/50 dark:focus-visible:outline-primary-dark"
+                rows="8" placeholder="We'd love to hear from you...">{{ .csr }} </textarea>
+        </div>
+        <!-- Primary Button -->
+        <button type="button" id="buttonGenerateCSR"
+            class="mb-4 whitespace-nowrap rounded-radius bg-primary border border-primary px-4 py-2 text-sm font-medium tracking-wide text-on-primary transition hover:opacity-75 text-center focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary active:opacity-100 active:outline-offset-0 disabled:opacity-75 disabled:cursor-not-allowed dark:bg-primary-dark dark:border-primary-dark dark:text-on-primary-dark dark:focus-visible:outline-primary-dark">Generate</button>
+
+        <div class="flex mb-2 w-full max-w-md flex-col gap-1 text-on-surface dark:text-on-surface-dark">
+            <label for="textAreaResult" class="w-fit pl-0.5 text-sm">Result</label>
+            <textarea id="textAreaResult"
+                class="w-full rounded-radius border border-outline bg-surface-alt px-2.5 py-2 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-not-allowed disabled:opacity-75 dark:border-outline-dark dark:bg-surface-dark-alt/50 dark:focus-visible:outline-primary-dark"
+                rows="12" placeholder="We'd love to hear from you..."> </textarea>
+        </div>
+        <!-- Primary Button -->
+        <button type="button" id="buttonCopyCSR"
+            class="whitespace-nowrap rounded-radius bg-primary border border-primary px-4 py-2 text-sm font-medium tracking-wide text-on-primary transition hover:opacity-75 text-center focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary active:opacity-100 active:outline-offset-0 disabled:opacity-75 disabled:cursor-not-allowed dark:bg-primary-dark dark:border-primary-dark dark:text-on-primary-dark dark:focus-visible:outline-primary-dark">Copy
+            CSR To Clipboard</button>
+
+        <button type="button" id="buttonDownloadCSR"
+            class="whitespace-nowrap rounded-radius bg-primary border border-primary px-4 py-2 text-sm font-medium tracking-wide text-on-primary transition hover:opacity-75 text-center focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary active:opacity-100 active:outline-offset-0 disabled:opacity-75 disabled:cursor-not-allowed dark:bg-primary-dark dark:border-primary-dark dark:text-on-primary-dark dark:focus-visible:outline-primary-dark">Download
+            CSR</button>
+    </div>
+    <div class="w-full">
+        <h1 class="text-lg font-bold text-on-surface dark:text-on-surface-dark mb-4">AS Certificates</h1>
+        <label for="textArea" class="w-fit pl-0.5 text-sm">SCION Control Plane Certificate</label>
+        <div x-data="scionCertificateStatus()" x-init="fetchData()">
+            <template x-for="cert in chains" :key="cert.serial_number">
+                <article
+                    class="mb-4 group grid rounded-radius max-w-2xl overflow-hidden border border-outline bg-surface-alt text-on-surface dark:border-outline-dark dark:bg-surface-dark-alt dark:text-on-surface-dark">
+                    <!-- Body -->
+                    <div class="flex flex-col justify-center p-6">
+                        <div class="flex w-full">
+                            <h3 class="text-balance text-xl font-bold text-on-surface-strong lg:text-2xl dark:text-on-surface-dark-strong"
+                                aria-describedby="articleDescription" x-text="cert.subject.CommonName"></h3>
+
+                            <!-- Success Badge (Active) -->
+                            <span x-show="!cert.expired"
+                                class="ml-auto w-fit inline-flex overflow-hidden rounded-radius border border-success bg-surface text-xs font-medium text-success dark:border-success dark:bg-surface-dark dark:text-success">
+                                <span class="flex items-center gap-1 bg-success/10 px-2 py-1 dark:bg-success/10">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"
+                                        fill="currentColor" class="size-4">
+                                        <path fill-rule="evenodd"
+                                            d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zm13.36-1.814a.75.75 0 10-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 00-1.06 1.06l2.25 2.25a.75.75 0 001.14-.094l3.75-5.25z"
+                                            clip-rule="evenodd" />
+                                    </svg>
+                                    Active
+                                </span>
+                            </span>
+
+                            <!-- Danger Badge (Disconnected) -->
+                            <span x-show="cert.expired"
+                                class="ml-auto w-fit inline-flex overflow-hidden rounded-radius border border-danger bg-surface text-xs font-medium text-danger dark:border-danger dark:bg-surface-dark dark:text-danger">
+                                <span class="flex items-center gap-1 bg-danger/10 px-2 py-1 dark:bg-danger/10">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"
+                                        fill="currentColor" class="size-4">
+                                        <path fill-rule="evenodd"
+                                            d="M9.401 3.003c1.155-2 4.043-2 5.197 0l7.355 12.748c1.154 2-.29 4.5-2.599 4.5H4.645c-2.309 0-3.752-2.5-2.598-4.5L9.4 3.003zM12 8.25a.75.75 0 01.75.75v3.75a.75.75 0 01-1.5 0V9a.75.75 0 01.75-.75zm0 8.25a.75.75 0 100-1.5.75.75 0 000 1.5z"
+                                            clip-rule="evenodd" />
+                                    </svg>
+                                    Disconnected
+                                </span>
+                            </span>
+                        </div>
+
+                        <p id="articleDescription" class="my-4 max-w-lg text-pretty text-sm">
+                            <strong>Details:</strong><br>
+                            <span class="block text-xs text-on-surface-strong dark:text-on-surface-dark-strong">
+                                <strong>Valid From:</strong> <span x-text="cert.not_before"></span><br>
+                                <strong>Valid Until:</strong> <span x-text="cert.not_after"></span> <br>
+                                <strong>Issuer:</strong> <span x-text="cert.parent.subject.CommonName"></span>
+                            </span>
+                        </p>
+
+                    </div>
+                </article>
+            </template>
+        </div>
+        <h3 class=" font-bold text-on-surface dark:text-on-surface-dark mb-4">Upload new Certificate Chains</h3>
+        <div class="relative flex w-full max-w-sm flex-col gap-1 mb-2">
+            <label class="w-fit pl-0.5 text-sm text-on-surface dark:text-on-surface-dark" for="fileInput">Choose
+                Certificate Chain</label>
+            <input id="fileInput" type="file"
+                class="w-full overflow-clip rounded-radius border border-outline bg-surface-alt/50 text-sm text-on-surface file:mr-4 file:border-none file:bg-surface-alt file:px-4 file:py-2 file:font-medium file:text-on-surface-strong focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-not-allowed disabled:opacity-75 dark:border-outline-dark dark:bg-surface-dark-alt/50 dark:text-on-surface-dark dark:file:bg-surface-dark-alt dark:file:text-on-surface-dark-strong dark:focus-visible:outline-primary-dark" />
+        </div>
+        <!-- Primary Button -->
+        <button type="button" id="buttonUploadCert"
+            class="whitespace-nowrap rounded-radius bg-primary border border-primary px-4 py-2 text-sm font-medium tracking-wide text-on-primary transition hover:opacity-75 text-center focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary active:opacity-100 active:outline-offset-0 disabled:opacity-75 disabled:cursor-not-allowed dark:bg-primary-dark dark:border-primary-dark dark:text-on-primary-dark dark:focus-visible:outline-primary-dark">Upload
+            Certificate Chain</button>
+    </div>
+</div>
+
+<script>
+    const textArea = document.getElementById('textArea');
+    const textAreaResult = document.getElementById('textAreaResult');
+    const button = document.getElementById('buttonGenerateCSR');
+
+    button.addEventListener('click', () => {
+        const csr = textArea.value;
+        const csrData = {
+            csr: csr
+        };
+
+        fetch('/api/v1/cppki/csr', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: csr
+        })
+            .then(response => response.text())
+            .then(response => {
+                textAreaResult.value = response;
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+            });
+    });
+
+    const buttonCopy = document.getElementById('buttonCopyCSR');
+    buttonCopy.addEventListener('click', () => {
+        textAreaResult.select();
+        document.execCommand('copy');
+    });
+
+    const buttonDownload = document.getElementById('buttonDownloadCSR');
+    buttonDownload.addEventListener('click', () => {
+        const blob = new Blob([textAreaResult.value], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'ISD1-AS150.as.csr';
+        a.click();
+        URL.revokeObjectURL(url);
+    });
+
+    const fileInput = document.getElementById('fileInput');
+    const buttonUpload = document.getElementById('buttonUploadCert');
+
+    buttonUpload.addEventListener('click', () => {
+        const file = fileInput.files[0];
+        const formData = new FormData();
+
+        if (!file) {
+            return;
+        }
+
+        // Get file as string
+        const reader = new FileReader();
+        reader.onerror = function (error) {
+            console.error('Error:', error);
+        };
+        reader.onload = function () {
+            fetch('/api/v1/cppki/certs', {
+                method: 'POST',
+                body: reader.result,
+            })
+                .then(response => response.text())
+                .then(response => {
+                    alert(response);
+                })
+                .catch((error) => {
+                    console.error('Error:', error);
+                });
+        };
+
+        reader.readAsText(file);
+
+    });
+
+    function scionCertificateStatus() {
+        return {
+            chains: [],
+            async fetchData() {
+                try {
+                    const response = await fetch('/api/v1/cppki/certs'); // Replace with the actual endpoint
+                    this.chains = await response.json();
+                } catch (error) {
+                    console.error("Error fetching router links:", error);
+                }
+            }
+        }
+    }
+
+</script>
+
+{{ template "basebottom" . }}

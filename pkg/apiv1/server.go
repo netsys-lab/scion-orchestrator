@@ -82,6 +82,10 @@ func RegisterRoutes(env *environment.HostEnvironment, config *conf.Config, r *gi
 	SignCertificateByCSRHandler(authorized, config.IsdAs, env.ConfigPath, config)
 	AddStatusHandler(authorized)
 	AddSettingsHandler(authorized, config)
+	GetTopologyHandler(authorized, env.ConfigPath)
+	GetSCIONLinksHandler(authorized, env.ConfigPath)
+	AddSCIONLinksHandler(authorized, env.ConfigPath)
+	GetCertificateChainsHandler(authorized, config.IsdAs, env.ConfigPath)
 	return nil
 }
 

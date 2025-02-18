@@ -1,0 +1,95 @@
+{{ template "basetop" . }}
+
+<h1 class="text-lg font-bold text-on-surface dark:text-on-surface-dark mb-4">Certificate Authority</h1>
+
+<div class="flex w-full">
+    <div>
+        <div class="relative mb-2 flex w-full max-w-sm flex-col gap-1">
+            <label class="w-fit pl-0.5 text-sm text-on-surface dark:text-on-surface-dark" for="fileInput">Choose
+                Certificate
+                Signing Request</label>
+            <input id="fileInput" type="file"
+                class="w-full overflow-clip rounded-radius border border-outline bg-surface-alt/50 text-sm text-on-surface file:mr-4 file:border-none file:bg-surface-alt file:px-4 file:py-2 file:font-medium file:text-on-surface-strong focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-not-allowed disabled:opacity-75 dark:border-outline-dark dark:bg-surface-dark-alt/50 dark:text-on-surface-dark dark:file:bg-surface-dark-alt dark:file:text-on-surface-dark-strong dark:focus-visible:outline-primary-dark" />
+        </div>
+        <!-- Primary Button -->
+        <button type="button" id="buttonUploadCSR"
+            class="whitespace-nowrap rounded-radius bg-primary border border-primary px-4 py-2 text-sm font-medium tracking-wide text-on-primary transition hover:opacity-75 text-center focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary active:opacity-100 active:outline-offset-0 disabled:opacity-75 disabled:cursor-not-allowed dark:bg-primary-dark dark:border-primary-dark dark:text-on-primary-dark dark:focus-visible:outline-primary-dark">Upload
+            CSR</button>
+
+
+        <div class="flex mt-4 mb-2 w-full max-w-md flex-col gap-1 text-on-surface dark:text-on-surface-dark">
+            <label for="textAreaResult" class="w-fit pl-0.5 text-sm">Result</label>
+            <textarea id="textAreaResult"
+                class="w-full rounded-radius border border-outline bg-surface-alt px-2.5 py-2 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-not-allowed disabled:opacity-75 dark:border-outline-dark dark:bg-surface-dark-alt/50 dark:focus-visible:outline-primary-dark"
+                rows="12" placeholder="We'd love to hear from you..."> </textarea>
+        </div>
+        <!-- Primary Button -->
+        <button type="button" id="buttonCopyCert"
+            class="whitespace-nowrap rounded-radius bg-primary border border-primary px-4 py-2 text-sm font-medium tracking-wide text-on-primary transition hover:opacity-75 text-center focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary active:opacity-100 active:outline-offset-0 disabled:opacity-75 disabled:cursor-not-allowed dark:bg-primary-dark dark:border-primary-dark dark:text-on-primary-dark dark:focus-visible:outline-primary-dark">Copy
+            Cert To Clipboard</button>
+
+        <button type="button" id="buttonDownloadCert"
+            class="whitespace-nowrap rounded-radius bg-primary border border-primary px-4 py-2 text-sm font-medium tracking-wide text-on-primary transition hover:opacity-75 text-center focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary active:opacity-100 active:outline-offset-0 disabled:opacity-75 disabled:cursor-not-allowed dark:bg-primary-dark dark:border-primary-dark dark:text-on-primary-dark dark:focus-visible:outline-primary-dark">Download
+            Certificate</button>
+    </div>
+    <div>
+
+    </div>
+</div>
+
+<script>
+    const fileInput = document.getElementById('fileInput');
+    const textAreaResult = document.getElementById('textAreaResult');
+    const button = document.getElementById('buttonUploadCSR');
+
+    button.addEventListener('click', () => {
+
+        const file = fileInput.files[0];
+        const formData = new FormData();
+
+        if (!file) {
+            return;
+        }
+
+        // Get file as string
+        const reader = new FileReader();
+        reader.onerror = function (error) {
+            console.error('Error:', error);
+        };
+        reader.onload = function () {
+            fetch('/api/v1/ca/certs/1/150/sign', {
+                method: 'POST',
+                body: reader.result,
+            })
+                .then(response => response.text())
+                .then(response => {
+                    textAreaResult.value = response;
+                })
+                .catch((error) => {
+                    console.error('Error:', error);
+                });
+        };
+
+        reader.readAsText(file);
+
+
+    });
+
+    const buttonCopy = document.getElementById('buttonCopyCert');
+    buttonCopy.addEventListener('click', () => {
+        textAreaResult.select();
+        document.execCommand('copy');
+    });
+
+    const buttonDownloadCert = document.getElementById('buttonDownloadCert');
+    buttonDownloadCert.addEventListener('click', () => {
+        const blob = new Blob([textAreaResult.value], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'ISD1-AS150.as.crt';
+        a.click();
+        URL.revokeObjectURL(url);
+    });
+</script>
+{{ template "basebottom" . }}

@@ -1,5 +1,99 @@
-{{ template "base" . }}
-{{ define "content" }}
-<h1>Dashboard</h1>
-<p>Welcome to your dashboard, {{ .username }}!</p>
-{{ end }}
+{{ template "basetop" . }}
+
+<div x-data="scionDashboard()" class="max-w-4xl mx-auto space-y-4">
+
+    <!-- SCION Status Overview -->
+    <div class="p-card shadow-md">
+        <h2 class="text-xl font-semibold">SCION Autonomous System Overview</h2>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
+            <!-- ISD-AS ID -->
+            <div class="p-badge p-primary p-large">
+                <span>ISD-AS</span>
+                <strong x-text="isd_as"></strong>
+            </div>
+
+            <!-- Node Status -->
+            <div class="p-badge" :class="status === 'Online' ? 'p-success' : 'p-danger'">
+                <span>Status</span>
+                <strong x-text="status"></strong>
+            </div>
+
+            <!-- Connectivity -->
+            <div class="p-badge p-secondary">
+                <span>Connectivity</span>
+                <strong x-text="connectivity"></strong>
+            </div>
+
+            <!-- Control Status -->
+            <div class="p-badge p-warning">
+                <span>Control Plane</span>
+                <strong x-text="control_status"></strong>
+            </div>
+        </div>
+    </div>
+
+    <!-- Connectivity Overview -->
+    <div class="p-card shadow-md">
+        <h3 class="text-lg font-semibold">Connectivity</h3>
+        <table class="p-table mt-3">
+            <thead>
+                <tr>
+                    <th>Neighbor AS</th>
+                    <th>Status</th>
+                    <th>Latency</th>
+                    <th>Bandwidth</th>
+                </tr>
+            </thead>
+            <tbody>
+                <template x-for="peer in peers" :key="peer.as">
+                    <tr>
+                        <td x-text="peer.as"></td>
+                        <td>
+                            <span :class="peer.status === 'Up' ? 'p-tag p-success' : 'p-tag p-danger'"
+                                x-text="peer.status"></span>
+                        </td>
+                        <td x-text="peer.latency + ' ms'"></td>
+                        <td x-text="peer.bandwidth + ' Mbps'"></td>
+                    </tr>
+                </template>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Event Logs -->
+    <div class="p-card shadow-md">
+        <h3 class="text-lg font-semibold">Recent Events</h3>
+        <div class="p-list mt-3">
+            <template x-for="event in events" :key="event.id">
+                <div class="p-list-item">
+                    <div class="p-list-title" x-text="event.message"></div>
+                    <div class="p-list-subtitle text-sm" x-text="event.timestamp"></div>
+                </div>
+            </template>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    function scionDashboard() {
+        return {
+            isd_as: "1-110",
+            status: "Online",
+            connectivity: "Stable",
+            control_status: "Operational",
+            peers: [
+                { as: "1-120", status: "Up", latency: 12, bandwidth: 100 },
+                { as: "1-130", status: "Down", latency: 0, bandwidth: 0 },
+                { as: "1-140", status: "Up", latency: 8, bandwidth: 150 },
+            ],
+            events: [
+                { id: 1, message: "New neighbor connection established with 1-120", timestamp: "2025-02-13 10:30" },
+                { id: 2, message: "High latency detected to 1-130", timestamp: "2025-02-13 10:15" },
+                { id: 3, message: "Control plane update applied", timestamp: "2025-02-13 09:45" },
+            ]
+        };
+    }
+</script>
+
+{{ template "basebottom" . }}

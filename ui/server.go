@@ -1,6 +1,8 @@
 package ui
 
 import (
+	"encoding/json"
+	"log"
 	"net/http"
 	"strings"
 
@@ -24,11 +26,60 @@ func RegisterRoutes(env *environment.HostEnvironment, config *conf.Config, r *gi
 	// Apply the BasicAuth middleware to a specific route group
 	authorized := r.Group("/", gin.BasicAuth(accs))
 
+	/*
+			const paths = [
+		            "/",
+		            "/cryptography",
+		            "/modules",
+		            "/troubleshooting",
+		            "/bootstrapping",
+		            "/certificate-authority",
+		            "/settings"
+		        ];
+	*/
+
 	authorized.GET("/", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "index.html", gin.H{
 			"title": "SCION Orchestrator",
 		})
 	})
+
+	authorized.GET("/cryptography", func(c *gin.Context) {
+		csr, err := json.MarshalIndent(gin.H{"subject": gin.H{"common_name": "1-150 AS Certificate", "isd_as": "1-150"}}, "", "  ")
+		if err != nil {
+			log.Println(err)
+		}
+		c.HTML(http.StatusOK, "cryptography.html", gin.H{
+			"title": "SCION Orchestrator",
+			"csr":   string(csr),
+			// "Content": "cryptograhpy",
+		})
+	})
+
+	authorized.GET("/modules", func(c *gin.Context) {
+		c.HTML(http.StatusOK, "modules.html", gin.H{
+			"title": "SCION Orchestrator",
+		})
+	})
+
+	authorized.GET("/troubleshooting", func(c *gin.Context) {
+		c.HTML(http.StatusOK, "troubleshooting.html", gin.H{
+			"title": "SCION Orchestrator",
+		})
+	})
+
+	authorized.GET("/connectivity", func(c *gin.Context) {
+		c.HTML(http.StatusOK, "connectivity.html", gin.H{
+			"title": "SCION Orchestrator",
+		})
+	})
+
+	authorized.GET("/certificate-authority", func(c *gin.Context) {
+		c.HTML(http.StatusOK, "certificate-authority.html", gin.H{
+			"title": "SCION Orchestrator",
+		})
+	})
+
 	authorized.GET("/settings", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "settings.html", gin.H{
 			"title": "SCION Orchestrator",
