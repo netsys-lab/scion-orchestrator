@@ -13,10 +13,12 @@ const (
 type ServiceStatus struct {
 	Status  string
 	Message string
+	Id      string
 }
 
 type HostStatus struct {
 	Mode               string
+	ServiceMode        string
 	BootstrapServer    ServiceStatus
 	Dispatcher         ServiceStatus
 	Daemon             ServiceStatus
@@ -37,12 +39,15 @@ func Init() {
 	Status = &HostStatus{
 		BootstrapServer: ServiceStatus{
 			Status: SERVICE_STATUS_INIT,
+			// Id:     "bootstrap",
 		},
 		Dispatcher: ServiceStatus{
 			Status: SERVICE_STATUS_INIT,
+			Id:     "scion-dispatcher",
 		},
 		Daemon: ServiceStatus{
 			Status: SERVICE_STATUS_INIT,
+			Id:     "scion-daemon",
 		},
 		CertificateRenewal: ServiceStatus{
 			Status: SERVICE_STATUS_INIT,

@@ -41,10 +41,12 @@ func (s *StandaloneService) UpdateMetrics() {
 	} else if strings.Contains(lowerName, "control") {
 		metrics.Status.ControlServices[s.Name] = metrics.ServiceStatus{
 			Status: metrics.SERVICE_STATUS_RUNNING,
+			Id:     s.Name,
 		}
 	} else if strings.Contains(lowerName, "router") {
 		metrics.Status.BorderRouters[s.Name] = metrics.ServiceStatus{
 			Status: metrics.SERVICE_STATUS_RUNNING,
+			Id:     s.Name,
 		}
 	}
 }

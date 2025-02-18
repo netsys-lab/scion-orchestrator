@@ -2,22 +2,15 @@ package osutils
 
 import (
 	"bytes"
-	"fmt"
 	"os"
 	"os/exec"
 	"strconv"
-	"strings"
 )
 
 // getJournalLogs fetches logs for a systemd service between start and end positions
-func GetJournalLogs(service string, start, end int) (string, error) {
-	// Ensure valid range
-	if start >= end {
-		return "", fmt.Errorf("start (%d) must be less than end (%d)", start, end)
-	}
-
+func GetJournalLogs(service string, lines int) (string, error) {
 	// Fetch logs up to 'end' lines
-	cmd := exec.Command("journalctl", "-u", service, "--lines", strconv.Itoa(end), "--no-pager")
+	cmd := exec.Command("journalctl", "-u", service, "--no-hostname", "-o", "cat", "-e", "--lines", strconv.Itoa(lines), "--no-pager")
 	var out bytes.Buffer
 	cmd.Stdout = &out
 	cmd.Stderr = os.Stderr
@@ -26,13 +19,5 @@ func GetJournalLogs(service string, start, end int) (string, error) {
 		return "", err
 	}
 
-	// Extract only the required range
-	lines := strings.Split(out.String(), "\n")
-	if start >= len(lines) {
-		return "", fmt.Errorf("start index out of range")
-	}
-
-	// Slice to return only the desired log range
-	selectedLogs := lines[start:end]
-	return strings.Join(selectedLogs, "\n"), nil
+	return out.String(), nil
 }

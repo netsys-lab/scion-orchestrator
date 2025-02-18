@@ -105,6 +105,12 @@ func main() {
 
 	metrics.Init()
 
+	if run {
+		metrics.Status.ServiceMode = "standalone"
+	} else {
+		metrics.Status.ServiceMode = "service"
+	}
+
 	if opts.Config != "" { // Run as a service
 		log.Println("[Main] Running as service")
 
