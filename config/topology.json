@@ -1,0 +1,55 @@
+{
+  "attributes": [
+    "authoritative",
+    "issuing",
+    "voting",
+    "core"
+  ],
+  "isd_as": "1-150",
+  "mtu": 1500,
+  "control_service": {
+    "cs-1": {
+      "addr": "127.0.0.1:30254"
+    }
+  },
+  "discovery_service": {
+    "cs-1": {
+      "addr": "127.0.0.1:30254"
+    }
+  },
+  "border_routers": {
+    "br-1": {
+      "internal_addr": "127.0.0.1:30001",
+      "interfaces": {
+        "2": {
+          "underlay": {
+            "public": "127.0.0.1:50000",
+            "remote": "127.0.0.1:50000"
+          },
+          "isd_as": "1-151",
+          "link_to": "CHILD",
+          "mtu": 1500
+        },
+        "3": {
+          "underlay": {
+            "public": "127.0.0.1:51000",
+            "remote": "127.0.0.1:51002"
+          },
+          "isd_as": "71-20965",
+          "link_to": "CORE",
+          "mtu": 1472
+        },
+        "4": {
+          "underlay": {
+            "public": "127.0.0.1:41000",
+            "remote": "127.0.0.1:41000"
+          },
+          "isd_as": "71-2000",
+          "link_to": "CHILD",
+          "mtu": 1472
+        }
+      }
+    }
+  },
+  "dispatched_ports": "30000-32767"
+}

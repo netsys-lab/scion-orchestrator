@@ -1,0 +1,43 @@
+{
+  "attributes": [],
+  "border_routers": {
+    "br-1": {
+      "interfaces": {
+        "2": {
+          "isd_as": "71-20965",
+          "link_to": "PARENT",
+          "mtu": 1472,
+          "underlay": {
+            "public": "141.44.25.151:50443",
+            "remote": "141.44.25.151:445"
+          }
+        }
+      },
+      "internal_addr": "141.44.25.151:30001"
+    }
+  },
+  "colibri_service": {
+    "co-1": {
+      "addr": "127.0.0.1:30257"
+    }
+  },
+  "control_service": {
+    "cs-1": {
+      "addr": "141.44.25.151:30254"
+    }
+  },
+  "discovery_service": {
+    "ds-1": {
+      "addr": "141.44.25.151:30254"
+    }
+  },
+  "sigs": {
+    "sig-1": {
+      "ctrl_addr": "141.44.25.151:30256",
+      "data_addr": "141.44.25.151:30056"
+    }
+  },
+  "isd_as": "71-2:0:4a",
+  "mtu": 1472,
+  "dispatched_ports": "31000-32767"
+}

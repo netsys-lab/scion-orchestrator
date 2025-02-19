@@ -1,0 +1,223 @@
+2025-02-18 20:17:04.481462+0000	INFO	             env/logging.go:42	=====================> Service started SCION Router br-1
+  Scion version: 
+
+  pid:           721435
+  euid/egid:     0 0
+  cmd line:      ["bin/router" "--config" "/home/marten/go/src/github.com/netsys-lab/scion-orchestrator/config/tmp/br1-tmp.toml"]
+
+2025-02-18 20:17:04.481829+0000	INFO	               json/json.go:48	topology.json; ignoring deprecated attribute value	{"value": "authoritative"}
+2025-02-18 20:17:04.481883+0000	INFO	               json/json.go:48	topology.json; ignoring deprecated attribute value	{"value": "issuing"}
+2025-02-18 20:17:04.481892+0000	INFO	               json/json.go:48	topology.json; ignoring deprecated attribute value	{"value": "voting"}
+2025-02-18 20:17:04.482165+0000	DEBUG	          control/iactx.go:111	Configuring Dataplane
+2025-02-18 20:17:04.482201+0000	DEBUG	        router/connector.go:54	CreateIACtx	{"isd_as": "1-150"}
+2025-02-18 20:17:04.483064+0000	DEBUG	       router/connector.go:169	Setting key	{"isd_as": "1-150", "index": 0}
+2025-02-18 20:17:04.483138+0000	DEBUG	        router/connector.go:66	Adding internal interface	{"isd_as": "1-150", "local": "127.0.0.1:30001"}
+2025-02-18 20:17:04.483339+0000	DEBUG	        router/connector.go:89	Adding external interface	{"interface": "2", "local_isd_as": "1-150", "local_addr": "127.0.0.1:50000", "remote_isd_as": "1-151", "remote_addr": "127.0.0.1:50000", "owned": true, "link_bfd_configured": false, "link_bfd_enabled": true, "dataplane_bfd_enabled": true}
+2025-02-18 20:17:04.483560+0000	DEBUG	        router/connector.go:89	Adding external interface	{"interface": "3", "local_isd_as": "1-150", "local_addr": "127.0.0.1:51000", "remote_isd_as": "71-20965", "remote_addr": "127.0.0.1:51002", "owned": true, "link_bfd_configured": false, "link_bfd_enabled": true, "dataplane_bfd_enabled": true}
+2025-02-18 20:17:04.483651+0000	DEBUG	        router/connector.go:89	Adding external interface	{"interface": "4", "local_isd_as": "1-150", "local_addr": "127.0.0.1:41000", "remote_isd_as": "71-2000", "remote_addr": "127.0.0.1:41000", "owned": true, "link_bfd_configured": false, "link_bfd_enabled": true, "dataplane_bfd_enabled": true}
+2025-02-18 20:17:04.483736+0000	DEBUG	       router/connector.go:147	Adding service	{"isd_as": "1-150", "svc": "DS", "address": "127.0.0.1:30254"}
+2025-02-18 20:17:04.483767+0000	DEBUG	       router/connector.go:147	Adding service	{"isd_as": "1-150", "svc": "CS", "address": "127.0.0.1:30254"}
+2025-02-18 20:17:04.483786+0000	DEBUG	       router/connector.go:245	Endhost port range configuration	{"startPort": 30000, "endPort": 32767}
+2025-02-18 20:17:04.483805+0000	DEBUG	          control/iactx.go:119	Dataplane configured successfully	{"config": "{IA: 1-150, BR.Name: br-1"}
+2025-02-18 20:17:04.484502+0000	INFO	                env/env.go:201	Exporting prometheus metrics	{"addr": "127.0.0.1:30401"}
+2025-02-18 20:17:04.487547+0000	DEBUG	       router/dataplane.go:678	Initialize packet pool of size	{"poolSize": 4871}
+2025-02-18 20:17:04.494016+0000	DEBUG	      router/dataplane.go:1036	Initialize forwarder for	{"interface": 2}
+2025-02-18 20:17:04.494084+0000	DEBUG	       router/dataplane.go:709	Run receiver for	{"interface": 3}
+2025-02-18 20:17:04.494060+0000	DEBUG	       router/dataplane.go:872	Initialize slow-path processor with	{"id": 0}
+2025-02-18 20:17:04.494107+0000	DEBUG	       router/dataplane.go:815	Initialize processor with	{"id": 1}
+2025-02-18 20:17:04.494023+0000	DEBUG	      router/dataplane.go:1036	Initialize forwarder for	{"interface": 3}
+2025-02-18 20:17:04.494141+0000	DEBUG	       router/dataplane.go:709	Run receiver for	{"interface": 2}
+2025-02-18 20:17:04.494134+0000	DEBUG	      router/dataplane.go:1036	Initialize forwarder for	{"interface": 0}
+2025-02-18 20:17:04.494156+0000	DEBUG	       router/dataplane.go:815	Initialize processor with	{"id": 4}
+2025-02-18 20:17:04.494102+0000	DEBUG	       router/dataplane.go:709	Run receiver for	{"interface": 4}
+2025-02-18 20:17:04.494090+0000	DEBUG	       router/dataplane.go:815	Initialize processor with	{"id": 0}
+2025-02-18 20:17:04.494047+0000	DEBUG	       router/dataplane.go:815	Initialize processor with	{"id": 2}
+2025-02-18 20:17:04.494154+0000	DEBUG	       router/dataplane.go:815	Initialize processor with	{"id": 5}
+2025-02-18 20:17:04.494196+0000	DEBUG	       router/dataplane.go:709	Run receiver for	{"interface": 0}
+2025-02-18 20:17:04.494055+0000	DEBUG	       router/dataplane.go:815	Initialize processor with	{"id": 3}
+2025-02-18 20:17:04.494084+0000	DEBUG	      router/dataplane.go:1036	Initialize forwarder for	{"interface": 4}
+2025-02-18 20:17:05.003857+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:17:05.003900+0000	DEBUG	      router/dataplane.go:1154	Discarding packet	{"error": "cannot route, dropping pkt"}
+2025-02-18 20:17:05.003993+0000	DEBUG	      router/dataplane.go:1154	Discarding packet	{"error": "cannot route, dropping pkt"}
+2025-02-18 20:17:05.496666+0000	DEBUG	            bfd/session.go:231	Bootstrapped
+2025-02-18 20:17:05.496762+0000	DEBUG	            bfd/session.go:437	Transitioned from state Down to state Init on event Down
+2025-02-18 20:17:05.496666+0000	DEBUG	            bfd/session.go:231	Bootstrapped
+2025-02-18 20:17:05.496783+0000	DEBUG	            bfd/session.go:437	Transitioned from state Down to state Init on event Down
+2025-02-18 20:17:05.496684+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:17:05.663398+0000	DEBUG	            bfd/session.go:437	Transitioned from state Init to state Up on event Init
+2025-02-18 20:17:05.683910+0000	DEBUG	            bfd/session.go:437	Transitioned from state Init to state Up on event Init
+2025-02-18 20:17:06.318331+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:17:07.128579+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:17:08.029579+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:17:09.020258+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:17:09.821254+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:17:10.010748+0000	DEBUG	      router/dataplane.go:1154	Discarding packet	{"error": "cannot route, dropping pkt"}
+2025-02-18 20:17:10.011175+0000	DEBUG	      router/dataplane.go:1154	Discarding packet	{"error": "cannot route, dropping pkt"}
+2025-02-18 20:17:10.011188+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:17:10.732181+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:17:11.703169+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:17:12.463908+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:17:13.454244+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:17:14.414325+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:17:15.011586+0000	DEBUG	      router/dataplane.go:1154	Discarding packet	{"error": "cannot route, dropping pkt"}
+2025-02-18 20:17:15.011733+0000	DEBUG	      router/dataplane.go:1154	Discarding packet	{"error": "cannot route, dropping pkt"}
+2025-02-18 20:17:15.011947+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:17:15.194898+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:17:16.025065+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:17:16.825485+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:17:17.645607+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:17:18.486570+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:17:19.267177+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:17:20.012482+0000	DEBUG	      router/dataplane.go:1154	Discarding packet	{"error": "cannot route, dropping pkt"}
+2025-02-18 20:17:20.012673+0000	DEBUG	      router/dataplane.go:1154	Discarding packet	{"error": "cannot route, dropping pkt"}
+2025-02-18 20:17:20.014371+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:17:20.117151+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:17:20.997259+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:17:21.767750+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:17:22.748723+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:17:23.719404+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:17:24.690299+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:17:25.010870+0000	DEBUG	      router/dataplane.go:1154	Discarding packet	{"error": "cannot route, dropping pkt"}
+2025-02-18 20:17:25.010923+0000	DEBUG	      router/dataplane.go:1154	Discarding packet	{"error": "cannot route, dropping pkt"}
+2025-02-18 20:17:25.010985+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:17:25.610585+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:17:26.411505+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:17:27.332476+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:17:28.112553+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:17:29.052802+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:17:29.962852+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:17:30.015044+0000	DEBUG	      router/dataplane.go:1154	Discarding packet	{"error": "cannot route, dropping pkt"}
+2025-02-18 20:17:30.015386+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:17:30.015408+0000	DEBUG	      router/dataplane.go:1154	Discarding packet	{"error": "cannot route, dropping pkt"}
+2025-02-18 20:17:30.873263+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:17:31.813496+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:17:32.804293+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:17:33.634494+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:17:34.565456+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:17:35.016794+0000	DEBUG	      router/dataplane.go:1154	Discarding packet	{"error": "cannot route, dropping pkt"}
+2025-02-18 20:17:35.017014+0000	DEBUG	      router/dataplane.go:1154	Discarding packet	{"error": "cannot route, dropping pkt"}
+2025-02-18 20:17:35.018727+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:17:35.446222+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:17:36.446406+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:17:37.316775+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:17:38.247651+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:17:39.228292+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:17:40.018274+0000	DEBUG	      router/dataplane.go:1154	Discarding packet	{"error": "cannot route, dropping pkt"}
+2025-02-18 20:17:40.018555+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:17:40.018582+0000	DEBUG	      router/dataplane.go:1154	Discarding packet	{"error": "cannot route, dropping pkt"}
+2025-02-18 20:17:40.178387+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:17:41.068934+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:17:42.059192+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:17:43.050145+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:17:44.010781+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:17:44.841296+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:17:45.013585+0000	DEBUG	      router/dataplane.go:1154	Discarding packet	{"error": "cannot route, dropping pkt"}
+2025-02-18 20:17:45.013662+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:17:45.013678+0000	DEBUG	      router/dataplane.go:1154	Discarding packet	{"error": "cannot route, dropping pkt"}
+2025-02-18 20:17:45.601726+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:17:46.482487+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:17:47.481838+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:17:48.372311+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:17:49.192239+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:17:50.020349+0000	DEBUG	      router/dataplane.go:1154	Discarding packet	{"error": "cannot route, dropping pkt"}
+2025-02-18 20:17:50.020521+0000	DEBUG	      router/dataplane.go:1154	Discarding packet	{"error": "cannot route, dropping pkt"}
+2025-02-18 20:17:50.020523+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:17:50.052532+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:17:50.952670+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:17:51.833805+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:17:52.754669+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:17:53.644551+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:17:54.614940+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:17:55.019091+0000	DEBUG	      router/dataplane.go:1154	Discarding packet	{"error": "cannot route, dropping pkt"}
+2025-02-18 20:17:55.019146+0000	DEBUG	      router/dataplane.go:1154	Discarding packet	{"error": "cannot route, dropping pkt"}
+2025-02-18 20:17:55.019191+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:17:55.435054+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:17:56.305305+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:17:57.255761+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:17:58.156606+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:17:58.946619+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:17:59.787096+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:18:00.017558+0000	DEBUG	      router/dataplane.go:1154	Discarding packet	{"error": "cannot route, dropping pkt"}
+2025-02-18 20:18:00.017675+0000	DEBUG	      router/dataplane.go:1154	Discarding packet	{"error": "cannot route, dropping pkt"}
+2025-02-18 20:18:00.017723+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:18:00.627286+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:18:01.567504+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:18:02.538291+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:18:03.438655+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:18:04.259063+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:18:05.022104+0000	DEBUG	      router/dataplane.go:1154	Discarding packet	{"error": "cannot route, dropping pkt"}
+2025-02-18 20:18:05.022168+0000	DEBUG	      router/dataplane.go:1154	Discarding packet	{"error": "cannot route, dropping pkt"}
+2025-02-18 20:18:05.022692+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:18:05.219842+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:18:06.150109+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:18:07.130718+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:18:07.911508+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:18:08.811806+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:18:09.572036+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:18:10.026453+0000	DEBUG	      router/dataplane.go:1154	Discarding packet	{"error": "cannot route, dropping pkt"}
+2025-02-18 20:18:10.026653+0000	DEBUG	      router/dataplane.go:1154	Discarding packet	{"error": "cannot route, dropping pkt"}
+2025-02-18 20:18:10.026812+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:18:10.532308+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:18:11.372257+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:18:12.222457+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:18:13.033603+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:18:13.944709+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:16:27.666060+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:16:28.617169+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:16:29.109205+0000	DEBUG	      router/dataplane.go:1154	Discarding packet	{"error": "cannot route, dropping pkt"}
+2025-02-18 20:16:29.109309+0000	DEBUG	      router/dataplane.go:1154	Discarding packet	{"error": "cannot route, dropping pkt"}
+2025-02-18 20:16:29.109389+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:16:29.537879+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:16:30.358204+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:16:31.279157+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:16:32.239722+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:16:33.140878+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:16:34.091749+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:16:34.116044+0000	DEBUG	      router/dataplane.go:1154	Discarding packet	{"error": "cannot route, dropping pkt"}
+2025-02-18 20:16:34.116373+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:16:34.116413+0000	DEBUG	      router/dataplane.go:1154	Discarding packet	{"error": "cannot route, dropping pkt"}
+2025-02-18 20:16:34.921957+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:16:35.881953+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:16:36.862519+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:16:37.642990+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:16:38.543787+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:16:39.113291+0000	DEBUG	      router/dataplane.go:1154	Discarding packet	{"error": "cannot route, dropping pkt"}
+2025-02-18 20:16:39.113296+0000	DEBUG	      router/dataplane.go:1154	Discarding packet	{"error": "cannot route, dropping pkt"}
+2025-02-18 20:16:39.113462+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:16:39.314417+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:16:40.105436+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:16:41.085643+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:16:41.886278+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:16:42.686613+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:16:43.546941+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:16:44.114665+0000	DEBUG	      router/dataplane.go:1154	Discarding packet	{"error": "cannot route, dropping pkt"}
+2025-02-18 20:16:44.114806+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:16:44.114811+0000	DEBUG	      router/dataplane.go:1154	Discarding packet	{"error": "cannot route, dropping pkt"}
+2025-02-18 20:16:44.397162+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:16:45.257378+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:16:46.017788+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:16:46.919384+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:16:47.840258+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:16:48.730528+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:16:49.116129+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:16:49.116161+0000	DEBUG	      router/dataplane.go:1154	Discarding packet	{"error": "cannot route, dropping pkt"}
+2025-02-18 20:16:49.116157+0000	DEBUG	      router/dataplane.go:1154	Discarding packet	{"error": "cannot route, dropping pkt"}
+2025-02-18 20:16:49.730846+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:16:50.531827+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:16:51.433174+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:16:52.333333+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:16:53.234865+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:16:54.120194+0000	DEBUG	      router/dataplane.go:1154	Discarding packet	{"error": "cannot route, dropping pkt"}
+2025-02-18 20:16:54.120416+0000	DEBUG	      router/dataplane.go:1154	Discarding packet	{"error": "cannot route, dropping pkt"}
+2025-02-18 20:16:54.120644+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:16:54.135257+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:16:54.985861+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:16:55.786748+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:16:56.597574+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:16:57.517512+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:16:58.348286+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:16:59.116763+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:16:59.116868+0000	DEBUG	      router/dataplane.go:1154	Discarding packet	{"error": "cannot route, dropping pkt"}
+2025-02-18 20:16:59.116865+0000	DEBUG	      router/dataplane.go:1154	Discarding packet	{"error": "cannot route, dropping pkt"}
+2025-02-18 20:16:59.339372+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}
+2025-02-18 20:17:00.279479+0000	DEBUG	       router/dataplane.go:772	Error while reading batch	{"interfaceID": 3, "err": "read udp 127.0.0.1:51000: recvmmsg: connection refused"}

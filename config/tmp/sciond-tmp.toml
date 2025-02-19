@@ -1,0 +1,15 @@
+[general]
+id = "sd"
+config_dir = "/home/marten/go/src/github.com/netsys-lab/scion-orchestrator/config/"
+
+[metrics]
+prometheus = "127.0.0.1:30455"
+
+[path_db]
+connection = "/home/marten/go/src/github.com/netsys-lab/scion-orchestrator/config/database/sd.path.db"
+
+[trust_db]
+connection = "/home/marten/go/src/github.com/netsys-lab/scion-orchestrator/config/database/sd.trust.db"
+
+[log.console]
+level = "debug"
