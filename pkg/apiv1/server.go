@@ -62,7 +62,7 @@ func SetupCertificates(env *environment.HostEnvironment) (string, string, error)
 
 }
 
-func RegisterRoutes(env *environment.HostEnvironment, config *conf.Config, r *gin.Engine) error {
+func RegisterRoutes(env *environment.HostEnvironment, config *conf.Config, r *gin.Engine, installWizard bool) error {
 
 	accs := make(gin.Accounts)
 
@@ -71,22 +71,29 @@ func RegisterRoutes(env *environment.HostEnvironment, config *conf.Config, r *gi
 		accs[parts[0]] = parts[1]
 	}
 
-	// Apply the BasicAuth middleware to a specific route group
-	authorized := r.Group(API_PREFIX, gin.BasicAuth(accs))
-	authorized.GET("/", func(c *gin.Context) {
+	var routerGroup *gin.RouterGroup
+
+	if installWizard {
+		routerGroup = r.Group(API_PREFIX)
+	} else {
+		// Apply the BasicAuth middleware to a specific route group
+		routerGroup = r.Group(API_PREFIX, gin.BasicAuth(accs))
+	}
+
+	routerGroup.GET("/", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"status": "ok"})
 	})
 
-	GenerateCSRFromTemplateHandler(authorized, config.IsdAs, env.ConfigPath)
-	AddCertificateChainHandler(authorized, config.IsdAs, env.ConfigPath)
-	SignCertificateByCSRHandler(authorized, config.IsdAs, env.ConfigPath, config)
-	AddStatusHandler(authorized)
-	AddSettingsHandler(authorized, config)
-	GetTopologyHandler(authorized, env.ConfigPath)
-	GetSCIONLinksHandler(authorized, env.ConfigPath)
-	AddSCIONLinksHandler(authorized, env.ConfigPath)
-	GetCertificateChainsHandler(authorized, config.IsdAs, env.ConfigPath)
-	GetServiceDetailsHandler(authorized)
+	GenerateCSRFromTemplateHandler(routerGroup, config.IsdAs, env.ConfigPath)
+	AddCertificateChainHandler(routerGroup, config.IsdAs, env.ConfigPath)
+	SignCertificateByCSRHandler(routerGroup, config.IsdAs, env.ConfigPath, config)
+	AddStatusHandler(routerGroup)
+	AddSettingsHandler(routerGroup, config)
+	GetTopologyHandler(routerGroup, env.ConfigPath)
+	GetSCIONLinksHandler(routerGroup, env.ConfigPath)
+	AddSCIONLinksHandler(routerGroup, env.ConfigPath)
+	GetCertificateChainsHandler(routerGroup, config.IsdAs, env.ConfigPath)
+	GetServiceDetailsHandler(routerGroup)
 	return nil
 }
 

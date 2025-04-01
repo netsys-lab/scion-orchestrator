@@ -12,7 +12,7 @@ import (
 )
 
 // RegisterRoutes sets up the routes using Gin
-func RegisterRoutes(env *environment.HostEnvironment, config *conf.Config, r *gin.Engine) error {
+func RegisterRoutes(env *environment.HostEnvironment, config *conf.Config, r *gin.Engine, installWizard bool) error {
 	// Load HTML templates from the "ui/templates" directory
 	r.LoadHTMLGlob("ui/templates/**/*")
 
@@ -23,8 +23,14 @@ func RegisterRoutes(env *environment.HostEnvironment, config *conf.Config, r *gi
 		accs[parts[0]] = parts[1]
 	}
 
-	// Apply the BasicAuth middleware to a specific route group
-	authorized := r.Group("/", gin.BasicAuth(accs))
+	var routerGroup *gin.RouterGroup
+
+	if installWizard {
+		routerGroup = r.Group("/")
+	} else {
+		// Apply the BasicAuth middleware to a specific route group
+		routerGroup = r.Group("/", gin.BasicAuth(accs))
+	}
 
 	/*
 			const paths = [
@@ -38,13 +44,21 @@ func RegisterRoutes(env *environment.HostEnvironment, config *conf.Config, r *gi
 		        ];
 	*/
 
-	authorized.GET("/", func(c *gin.Context) {
+	routerGroup.GET("/", func(c *gin.Context) {
+
+		if installWizard {
+			c.HTML(http.StatusOK, "install.html", gin.H{
+				"title": "SCION Orchestrator",
+			})
+			return
+		}
+
 		c.HTML(http.StatusOK, "index.html", gin.H{
 			"title": "SCION Orchestrator",
 		})
 	})
 
-	authorized.GET("/cryptography", func(c *gin.Context) {
+	routerGroup.GET("/cryptography", func(c *gin.Context) {
 		csr, err := json.MarshalIndent(gin.H{"subject": gin.H{"common_name": "1-150 AS Certificate", "isd_as": "1-150"}}, "", "  ")
 		if err != nil {
 			log.Println(err)
@@ -56,31 +70,31 @@ func RegisterRoutes(env *environment.HostEnvironment, config *conf.Config, r *gi
 		})
 	})
 
-	authorized.GET("/modules", func(c *gin.Context) {
+	routerGroup.GET("/modules", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "modules.html", gin.H{
 			"title": "SCION Orchestrator",
 		})
 	})
 
-	authorized.GET("/troubleshooting", func(c *gin.Context) {
+	routerGroup.GET("/troubleshooting", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "troubleshooting.html", gin.H{
 			"title": "SCION Orchestrator",
 		})
 	})
 
-	authorized.GET("/connectivity", func(c *gin.Context) {
+	routerGroup.GET("/connectivity", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "connectivity.html", gin.H{
 			"title": "SCION Orchestrator",
 		})
 	})
 
-	authorized.GET("/certificate-authority", func(c *gin.Context) {
+	routerGroup.GET("/certificate-authority", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "certificate-authority.html", gin.H{
 			"title": "SCION Orchestrator",
 		})
 	})
 
-	authorized.GET("/settings", func(c *gin.Context) {
+	routerGroup.GET("/settings", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "settings.html", gin.H{
 			"title": "SCION Orchestrator",
 		})

@@ -28,6 +28,16 @@ type HostEnvironment struct {
 func (endhostEnv *HostEnvironment) ChangeToStandalone() {
 	dir, _ := os.Getwd()
 	dir = filepath.Join(dir, "config")
+
+	// Check if dir exists
+	if _, err := os.Stat(dir); os.IsNotExist(err) {
+		log.Println("[ChangeToStandalone] Directory does not exist, creating ", dir)
+		err := os.MkdirAll(dir, 0777)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+
 	endhostEnv.BasePath = dir
 	endhostEnv.ConfigPath = dir
 	endhostEnv.DaemonConfigPath = dir

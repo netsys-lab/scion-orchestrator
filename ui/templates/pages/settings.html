@@ -5,107 +5,70 @@
 
     <form class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-        <!-- Basic Config -->
+        <!-- General Settings -->
         <div>
             <h2 class="font-bold mb-2">General</h2>
             <div class="flex flex-col gap-2">
-                <label>Command</label>
-                <input type="text" x-model="config.command" class="input">
-                <label>Mode</label>
-                <input type="text" x-model="config.mode" class="input">
-                <label>ISD-AS</label>
-                <input type="text" x-model="config.isdAs" class="input">
+                <div class="flex w-full max-w-xs flex-col gap-1 text-on-surface dark:text-on-surface-dark">
+                    <label class="w-fit pl-0.5 text-sm">Command</label>
+                    <input disabled type="text" x-model="config.command"
+                        class="w-full rounded-radius border border-outline bg-surface-alt px-2 py-2 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-not-allowed disabled:opacity-75 dark:border-outline-dark dark:bg-surface-dark-alt/50 dark:focus-visible:outline-primary-dark">
+                </div>
+
+                <div class="flex w-full max-w-xs flex-col gap-1 text-on-surface dark:text-on-surface-dark">
+                    <label disabled class="w-fit pl-0.5 text-sm">Mode</label>
+                    <input type="text" x-model="config.mode"
+                        class="w-full rounded-radius border border-outline bg-surface-alt px-2 py-2 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-not-allowed disabled:opacity-75 dark:border-outline-dark dark:bg-surface-dark-alt/50 dark:focus-visible:outline-primary-dark">
+                </div>
+
+                <div class="flex w-full max-w-xs flex-col gap-1 text-on-surface dark:text-on-surface-dark">
+                    <label disabled class="w-fit pl-0.5 text-sm">ISD-AS</label>
+                    <input type="text" x-model="config.isdAs"
+                        class="w-full rounded-radius border border-outline bg-surface-alt px-2 py-2 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-not-allowed disabled:opacity-75 dark:border-outline-dark dark:bg-surface-dark-alt/50 dark:focus-visible:outline-primary-dark">
+                </div>
             </div>
         </div>
 
         <!-- UI -->
         <div>
-            <h2 class="font-bold mb-2">UI</h2>
-            <div class="flex flex-col gap-2">
-                <label>UI Server</label>
-                <input type="text" x-model="config.ui.server" class="input">
-            </div>
-        </div>
-
-        <!-- API -->
-        <div>
-            <h2 class="font-bold mb-2">API</h2>
-            <div class="flex flex-col gap-2">
-                <label>API Address</label>
-                <input type="text" x-model="config.api.address" class="input">
-                <label>Users</label>
-                <input type="text" @keydown.enter.prevent="addToList('api.users', $event.target.value)"
-                    placeholder="Add user">
-                <ul>
-                    <template x-for="user in config.api.users" :key="user">
-                        <li x-text="user" class="text-sm text-gray-500"></li>
-                    </template>
-                </ul>
+            <h2 class="font-bold mb-2">UI/API HTTPS Server</h2>
+            <div class="flex w-full max-w-xs flex-col gap-1 text-on-surface dark:text-on-surface-dark">
+                <label class="w-fit pl-0.5 text-sm">Server Listen Address</label>
+                <input type="text" x-model="config.ui.server"
+                    class="w-full rounded-radius border border-outline bg-surface-alt px-2 py-2 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-not-allowed disabled:opacity-75 dark:border-outline-dark dark:bg-surface-dark-alt/50 dark:focus-visible:outline-primary-dark">
             </div>
         </div>
 
         <!-- Bootstrap -->
         <div>
             <h2 class="font-bold mb-2">Bootstrap</h2>
-            <div class="flex flex-col gap-2">
-                <label>Bootstrap Server</label>
-                <input type="text" x-model="config.bootstrap.server" class="input">
-                <label>Allowed Subnets</label>
-                <input type="text" @keydown.enter.prevent="addToList('bootstrap.allowedSubnets', $event.target.value)"
-                    placeholder="Add subnet">
-                <ul>
-                    <template x-for="subnet in config.bootstrap.allowedSubnets" :key="subnet">
-                        <li x-text="subnet" class="text-sm text-gray-500"></li>
-                    </template>
-                </ul>
-                <label>Allow Client Fail</label>
-                <input type="checkbox" x-model="config.bootstrap.allowClientFail">
+            <div class="flex w-full max-w-xs flex-col gap-1 text-on-surface dark:text-on-surface-dark">
+                <label class="w-fit pl-0.5 text-sm">Bootstrap Server</label>
+                <input type="text" x-model="config.bootstrap.server" value="127.0.0.1:8041"
+                    class="w-full rounded-radius border border-outline bg-surface-alt px-2 py-2 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-not-allowed disabled:opacity-75 dark:border-outline-dark dark:bg-surface-dark-alt/50 dark:focus-visible:outline-primary-dark">
             </div>
-        </div>
 
-        <!-- CA -->
-        <div>
-            <h2 class="font-bold mb-2">CA</h2>
-            <div class="flex flex-col gap-2">
-                <label>CA Server</label>
-                <input type="text" x-model="config.ca.server" class="input">
-                <label>Cert Validity Hours</label>
-                <input type="number" x-model="config.ca.certValidityHours" class="input">
-                <label>Clients</label>
-                <input type="text" @keydown.enter.prevent="addToList('ca.clients', $event.target.value)"
-                    placeholder="Add client">
-                <ul>
-                    <template x-for="client in config.ca.clients" :key="client">
-                        <li x-text="client" class="text-sm text-gray-500"></li>
-                    </template>
-                </ul>
+            <div class="flex w-full max-w-xs flex-col gap-1 text-on-surface dark:text-on-surface-dark">
+                <label class="w-fit pl-0.5 text-sm">AllowedSubnets</label>
+                <input type="text" x-model="config.bootstrap.allowed_subnets" value="141.44.0.0/16, 10.44.25.0/24"
+                    class="w-full rounded-radius border border-outline bg-surface-alt px-2 py-2 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-not-allowed disabled:opacity-75 dark:border-outline-dark dark:bg-surface-dark-alt/50 dark:focus-visible:outline-primary-dark">
+            </div>
+
+            <div class="flex w-full max-w-xs flex-col gap-1 text-on-surface dark:text-on-surface-dark">
+                <label class="w-fit pl-0.5 text-sm">Topology Overwrites for Bootstrapping</label>
+                <input type="text" x-model="config.bootstrap.allowed_subnets"
+                    value="border_routers.br-1.internal_addr=127.0.0.1:30004"
+                    class="w-full rounded-radius border border-outline bg-surface-alt px-2 py-2 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-not-allowed disabled:opacity-75 dark:border-outline-dark dark:bg-surface-dark-alt/50 dark:focus-visible:outline-primary-dark">
             </div>
         </div>
 
         <!-- Metrics -->
         <div>
             <h2 class="font-bold mb-2">Metrics</h2>
-            <div class="flex flex-col gap-2">
-                <label>Metrics Server</label>
-                <input type="text" x-model="config.metrics.server" class="input">
-                <label>Prometheus</label>
-                <input type="text" x-model="config.metrics.prometheus" class="input">
-            </div>
-        </div>
-
-        <!-- Service Config -->
-        <div class="md:col-span-2">
-            <h2 class="font-bold mb-2">Service Config</h2>
-            <div class="grid grid-cols-2 gap-4">
-                <label><input type="checkbox" x-model="config.serviceConfig.disableDaemon"> Disable Daemon</label>
-                <label><input type="checkbox" x-model="config.serviceConfig.disableDispatcher"> Disable
-                    Dispatcher</label>
-                <label><input type="checkbox" x-model="config.serviceConfig.disableBootstrapServer"> Disable Bootstrap
-                    Server</label>
-                <label><input type="checkbox" x-model="config.serviceConfig.disablePilaServer"> Disable Pila
-                    Server</label>
-                <label><input type="checkbox" x-model="config.serviceConfig.disableCertRenewal"> Disable Cert
-                    Renewal</label>
+            <div class="flex w-full max-w-xs flex-col gap-1 text-on-surface dark:text-on-surface-dark">
+                <label class="w-fit pl-0.5 text-sm">Metrics Server</label>
+                <input type="text" x-model="config.metrics.server"
+                    class="w-full rounded-radius border border-outline bg-surface-alt px-2 py-2 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-not-allowed disabled:opacity-75 dark:border-outline-dark dark:bg-surface-dark-alt/50 dark:focus-visible:outline-primary-dark">
             </div>
         </div>
 
@@ -117,7 +80,5 @@
 
     </form>
 </div>
-
-
 
 {{ template "basebottom" . }}

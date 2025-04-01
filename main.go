@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"os/signal"
@@ -47,9 +48,16 @@ var install bool
 var run bool
 var shutdown bool
 var restart bool
+var installWizard bool
 
 func main() {
 
+	// Check that its just running as standalone without args -> installWizard
+	if len(os.Args) == 1 {
+		log.Println("[Main] Running as standalone without args")
+		log.Println("[Main] Running install wizard")
+		installWizard = true
+	}
 	args, err := flags.Parse(&opts)
 	if err != nil {
 		log.Println(err)
@@ -111,6 +119,22 @@ func main() {
 		metrics.Status.ServiceMode = "service"
 	}
 
+	if installWizard {
+		env.ChangeToStandalone()
+		log.Println("[Main] Starting API server...")
+
+		go func() {
+			sig := <-cancelChan
+			log.Printf("[Signal] Caught signal %v", sig)
+			environment.KillAllChilds()
+			log.Fatal("[Main] Shutting down...")
+		}()
+
+		err := runUIApi(env, config)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
 	if opts.Config != "" { // Run as a service
 		log.Println("[Main] Running as service")
 
@@ -237,51 +261,8 @@ func runBackgroundServices(env *environment.HostEnvironment, config *conf.Config
 		log.Println("[Main] Warning: No users defined for HTTP access, API and UI can not be accessed")
 	} else {
 		log.Println("[Main] Starting API server...")
-
-		r := gin.Default()
-		// Start Gin server with the newly generated leaf certificate
-		// TODO: locate this file properly
-		//f, _ := os.Create(filepath.Join(env.LogPath, "gin.log"))
-		//gin.DefaultWriter = io.MultiWriter(f)
-
-		// })
 		eg.Go(func() error {
-
-			// eg.Go(func() error {
-			err := apiv1.RegisterRoutes(env, config, r)
-			if err != nil {
-				log.Println("[Main] Error registering API routes: ", err)
-				return err
-			}
-			// })
-
-			// eg.Go(func() error {
-			err = ui.RegisterRoutes(env, config, r)
-			if err != nil {
-				log.Println("[Main] Error registering UI routes: ", err)
-				return err
-			}
-
-			apiAddress := ":8443"
-			if config.Api.Address != "" {
-				apiAddress = config.Api.Address
-			}
-
-			log.Println("[Main] Starting API und UI server with TLS on", apiAddress)
-			certFile, keyFile, err := apiv1.SetupCertificates(env)
-			if err != nil {
-				log.Println("[Main] Error creating TLS Certificates of API and UI: ", err)
-				return err
-			}
-
-			// Start the server with the new certificate and private key
-			err = r.RunTLS(apiAddress, certFile, keyFile)
-			if err != nil {
-				log.Println("[Main] Failed to start TLS API/UI server: ", err)
-				return err
-			}
-
-			return nil
+			return runUIApi(env, config)
 		})
 	}
 
@@ -370,4 +351,50 @@ func runBackgroundServices(env *environment.HostEnvironment, config *conf.Config
 	}
 
 	return eg.Wait()
+}
+
+func runUIApi(env *environment.HostEnvironment, config *conf.Config) error {
+	r := gin.Default()
+	// Start Gin server with the newly generated leaf certificate
+	// TODO: locate this file properly
+	f, _ := os.Create(filepath.Join(env.LogPath, "gin.log"))
+	gin.DefaultWriter = io.MultiWriter(f)
+
+	// })
+
+	// eg.Go(func() error {
+	err := apiv1.RegisterRoutes(env, config, r, installWizard)
+	if err != nil {
+		log.Println("[Main] Error registering API routes: ", err)
+		return err
+	}
+	// })
+
+	// eg.Go(func() error {
+	err = ui.RegisterRoutes(env, config, r, installWizard)
+	if err != nil {
+		log.Println("[Main] Error registering UI routes: ", err)
+		return err
+	}
+
+	apiAddress := ":8443"
+	if config.Api.Address != "" {
+		apiAddress = config.Api.Address
+	}
+
+	log.Println("[Main] Starting API und UI server with TLS on", apiAddress)
+	certFile, keyFile, err := apiv1.SetupCertificates(env)
+	if err != nil {
+		log.Println("[Main] Error creating TLS Certificates of API and UI: ", err)
+		return err
+	}
+
+	// Start the server with the new certificate and private key
+	err = r.RunTLS(apiAddress, certFile, keyFile)
+	if err != nil {
+		log.Println("[Main] Failed to start TLS API/UI server: ", err)
+		return err
+	}
+
+	return nil
 }
