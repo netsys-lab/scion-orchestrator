@@ -62,7 +62,7 @@ func SetupCertificates(env *environment.HostEnvironment) (string, string, error)
 
 }
 
-func RegisterRoutes(env *environment.HostEnvironment, config *conf.Config, r *gin.Engine, installWizard bool) error {
+func RegisterRoutes(env *environment.HostEnvironment, config *conf.Config, r *gin.Engine, installWizard bool, scionConfig *conf.SCIONConfig) error {
 
 	accs := make(gin.Accounts)
 
@@ -84,16 +84,20 @@ func RegisterRoutes(env *environment.HostEnvironment, config *conf.Config, r *gi
 		c.JSON(http.StatusOK, gin.H{"status": "ok"})
 	})
 
-	GenerateCSRFromTemplateHandler(routerGroup, config.IsdAs, env.ConfigPath)
-	AddCertificateChainHandler(routerGroup, config.IsdAs, env.ConfigPath)
-	SignCertificateByCSRHandler(routerGroup, config.IsdAs, env.ConfigPath, config)
-	AddStatusHandler(routerGroup)
-	AddSettingsHandler(routerGroup, config)
-	GetTopologyHandler(routerGroup, env.ConfigPath)
-	GetSCIONLinksHandler(routerGroup, env.ConfigPath)
-	AddSCIONLinksHandler(routerGroup, env.ConfigPath)
-	GetCertificateChainsHandler(routerGroup, config.IsdAs, env.ConfigPath)
-	GetServiceDetailsHandler(routerGroup)
+	if installWizard {
+		DoInstallHandler(routerGroup, env, scionConfig, config)
+	} else {
+		GenerateCSRFromTemplateHandler(routerGroup, config.IsdAs, env.ConfigPath)
+		AddCertificateChainHandler(routerGroup, config.IsdAs, env.ConfigPath)
+		SignCertificateByCSRHandler(routerGroup, config.IsdAs, env.ConfigPath, config)
+		AddStatusHandler(routerGroup)
+		AddSettingsHandler(routerGroup, config)
+		GetTopologyHandler(routerGroup, env.ConfigPath)
+		GetSCIONLinksHandler(routerGroup, env.ConfigPath)
+		AddSCIONLinksHandler(routerGroup, env.ConfigPath)
+		GetCertificateChainsHandler(routerGroup, config.IsdAs, env.ConfigPath)
+		GetServiceDetailsHandler(routerGroup)
+	}
 	return nil
 }
 

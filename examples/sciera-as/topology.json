@@ -1,0 +1,22 @@
+{
+  "attributes": [],
+  "isd_as": "{isdAs}",
+  "mtu": 1500,
+  "control_service": {
+    "cs-1": {
+      "addr": "{csApiAddr}"
+    }
+  },
+  "discovery_service": {
+    "cs-1": {
+      "addr": "{csApiAddr}"
+    }
+  },
+  "border_routers": {
+    "br-1": {
+      "internal_addr": "{brInternalAddr}",
+      "interfaces": {}
+    }
+  },
+  "dispatched_ports": "30000-32767"
+}

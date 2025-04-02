@@ -130,7 +130,7 @@ func main() {
 			log.Fatal("[Main] Shutting down...")
 		}()
 
-		err := runUIApi(env, config)
+		err := runUIApi(env, config, scionConfig)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -153,7 +153,7 @@ func main() {
 		}
 
 		go func() {
-			err = runBackgroundServices(env, config)
+			err = runBackgroundServices(env, config, scionConfig)
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -168,7 +168,7 @@ func main() {
 	} else if run {
 		log.Println("[Main] Running in standalone mode")
 		go func() {
-			err = runBackgroundServices(env, config)
+			err = runBackgroundServices(env, config, scionConfig)
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -245,7 +245,7 @@ func runRestart(env *environment.HostEnvironment, config *conf.SCIONConfig, asCo
 	return nil
 }
 
-func runBackgroundServices(env *environment.HostEnvironment, config *conf.Config) error {
+func runBackgroundServices(env *environment.HostEnvironment, config *conf.Config, scionConfig *conf.SCIONConfig) error {
 	log.Println("[Main] Running background services")
 	var eg errgroup.Group
 
@@ -262,7 +262,13 @@ func runBackgroundServices(env *environment.HostEnvironment, config *conf.Config
 	} else {
 		log.Println("[Main] Starting API server...")
 		eg.Go(func() error {
-			return runUIApi(env, config)
+			// We want to fail here if the API server fails because that can be the case if the installer is still running
+			for runUIApi(env, config, scionConfig) != nil {
+				log.Println("[Main] Error starting API server, retrying...")
+				time.Sleep(1 * time.Second)
+			}
+
+			return nil
 		})
 	}
 
@@ -353,7 +359,7 @@ func runBackgroundServices(env *environment.HostEnvironment, config *conf.Config
 	return eg.Wait()
 }
 
-func runUIApi(env *environment.HostEnvironment, config *conf.Config) error {
+func runUIApi(env *environment.HostEnvironment, config *conf.Config, scionConfig *conf.SCIONConfig) error {
 	r := gin.Default()
 	// Start Gin server with the newly generated leaf certificate
 	// TODO: locate this file properly
@@ -363,7 +369,7 @@ func runUIApi(env *environment.HostEnvironment, config *conf.Config) error {
 	// })
 
 	// eg.Go(func() error {
-	err := apiv1.RegisterRoutes(env, config, r, installWizard)
+	err := apiv1.RegisterRoutes(env, config, r, installWizard, scionConfig)
 	if err != nil {
 		log.Println("[Main] Error registering API routes: ", err)
 		return err
@@ -371,7 +377,7 @@ func runUIApi(env *environment.HostEnvironment, config *conf.Config) error {
 	// })
 
 	// eg.Go(func() error {
-	err = ui.RegisterRoutes(env, config, r, installWizard)
+	err = ui.RegisterRoutes(env, config, r, installWizard, scionConfig)
 	if err != nil {
 		log.Println("[Main] Error registering UI routes: ", err)
 		return err

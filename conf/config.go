@@ -98,3 +98,17 @@ func LoadConfig(path string) (*Config, error) {
 
 	return c, nil
 }
+
+func (c *Config) Save(path string) error {
+	content, err := toml.Marshal(c)
+	if err != nil {
+		return err
+	}
+
+	err = os.WriteFile(path, content, 0644)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

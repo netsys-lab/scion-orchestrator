@@ -6,8 +6,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SCION Orchestrator Dashboard</title>
-    <script src="https://unpkg.com/htmx.org@1.9.6"></script>
-    <script src="https://unpkg.com/alpinejs@3.12.0" defer></script>
+    <script src="/static/htmx.min.js"></script>
+    <script src="/static/alpine-min.js" defer></script>
     <script>
         async function fetchStatus() {
             try {
@@ -24,7 +24,7 @@
             fetchStatus();
         }
     </script>
-    <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+    <script src="/static/tailwindv4.js"></script>
     <style type="text/tailwindcss">
         @theme {
             /* Light Theme */

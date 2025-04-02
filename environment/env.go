@@ -1,8 +1,11 @@
 package environment
 
 import (
+	"crypto/rand"
+	"encoding/base64"
 	"errors"
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"path/filepath"
@@ -11,6 +14,17 @@ import (
 
 	"github.com/netsys-lab/scion-orchestrator/pkg/fileops"
 )
+
+type InstallSetup struct {
+	ISDAs              string `json:"isdAs"`
+	InstallDir         string `json:"installDir"`
+	DeployBorderRouter bool   `json:"deployBorderRouter"`
+	BorderRouterAddr   string `json:"borderRouterAddr"`
+	DeployControl      bool   `json:"deployControl"`
+	ControlAddr        string `json:"controlAddr"`
+	AdminUsername      string `json:"adminUsername"`
+	AdminPassword      string `json:"adminPassword"`
+}
 
 var HostEnv *HostEnvironment
 
@@ -23,6 +37,18 @@ type HostEnvironment struct {
 	DatabasePath      string
 	TmpConfigPath     string
 	LogPath           string
+}
+
+func (endhostEnv *HostEnvironment) SetConfigPath(path string) {
+	endhostEnv.ConfigPath = path
+	endhostEnv.BasePath = path
+	endhostEnv.ConfigPath = path
+	endhostEnv.DaemonConfigPath = path
+	endhostEnv.ControlConfigPath = path
+	endhostEnv.RouterConfigPath = path
+	endhostEnv.DatabasePath = filepath.Join(path, "database")
+	endhostEnv.TmpConfigPath = filepath.Join(path, "tmp")
+	endhostEnv.LogPath = filepath.Join(path, "logs")
 }
 
 func (endhostEnv *HostEnvironment) ChangeToStandalone() {
@@ -146,7 +172,7 @@ func (endhostEnv *HostEnvironment) installBinaries() error {
 	return nil
 }
 
-func (endhostEnv *HostEnvironment) Install() error {
+func (endhostEnv *HostEnvironment) Install(setup *InstallSetup) error {
 	err := os.MkdirAll(endhostEnv.BasePath, 0777)
 	if err != nil {
 		return err
@@ -162,9 +188,63 @@ func (endhostEnv *HostEnvironment) Install() error {
 		return err
 	}
 
+	cryptoAsDir := filepath.Join(endhostEnv.ConfigPath, "crypto", "as")
+	if _, err := os.Stat(cryptoAsDir); os.IsNotExist(err) {
+		err = os.MkdirAll(cryptoAsDir, 0777)
+		if err != nil {
+			return err
+		}
+	}
+
 	localConfigFolder := filepath.Join(wd, "config")
 	destSciondFile := filepath.Join(endhostEnv.ConfigPath, "sciond.toml")
+	destDispatcherFile := filepath.Join(endhostEnv.ConfigPath, "dispatcher.toml")
 	destScionASFile := filepath.Join(endhostEnv.ConfigPath, "scion-orchestrator.toml")
+	destScionTopoFile := filepath.Join(endhostEnv.ConfigPath, "topology.json")
+
+	keysFolder := filepath.Join(endhostEnv.ConfigPath, "keys")
+
+	if _, err := os.Stat(keysFolder); os.IsNotExist(err) {
+		err = os.MkdirAll(keysFolder, 0777)
+		if err != nil {
+			return err
+		}
+	}
+
+	destMasterKey0File := filepath.Join(keysFolder, "master0.key")
+	destMasterKey1File := filepath.Join(keysFolder, "master1.key")
+
+	if _, err := os.Stat(destMasterKey0File); os.IsNotExist(err) {
+		log.Println("[Install] Generating master keys...")
+		randomBytes := make([]byte, 16)
+		_, err = rand.Read(randomBytes)
+		if err != nil {
+			return err
+		}
+		masterKey := base64.StdEncoding.EncodeToString(randomBytes)
+
+		key1File, err := os.OpenFile(destMasterKey0File, os.O_RDWR|os.O_CREATE, 0666)
+		if err != nil {
+			return err
+		}
+		defer key1File.Close()
+
+		_, err = io.WriteString(key1File, masterKey)
+		if err != nil {
+			return err
+		}
+
+		key2File, err := os.OpenFile(destMasterKey1File, os.O_RDWR|os.O_CREATE, 0666)
+		if err != nil {
+			return err
+		}
+
+		_, err = io.WriteString(key2File, masterKey)
+		if err != nil {
+			return err
+		}
+		log.Println("[Install] Generated master keys")
+	}
 
 	localBorderRouterConfigFiles, err := fileops.ListFilesByPrefixAndSuffix(localConfigFolder, "br-", ".toml")
 	if err != nil {
@@ -181,7 +261,7 @@ func (endhostEnv *HostEnvironment) Install() error {
 		return err
 	}
 
-	files := []string{destSciondFile, destScionASFile}
+	files := []string{destSciondFile, destScionASFile, destScionTopoFile, destDispatcherFile}
 
 	for _, file := range localBorderRouterConfigFiles {
 		correctFile := strings.ReplaceAll(file, fileops.AppendPathSeperatorIfMissing(localConfigFolder), endhostEnv.ConfigPath)
@@ -203,6 +283,28 @@ func (endhostEnv *HostEnvironment) Install() error {
 		err = fileops.ReplaceStringInFile(file, "{databaseDir}", endhostEnv.DatabasePath)
 		if err != nil {
 			return errors.New("Failed to configure databaseDir config in " + file + ": " + err.Error())
+		}
+
+		if setup != nil {
+
+			err = fileops.ReplaceStringInFile(file, "{isdAs}", setup.ISDAs)
+			if err != nil {
+				return errors.New("Failed to configure isdAs in " + file + ": " + err.Error())
+			}
+
+			if setup.DeployBorderRouter && setup.BorderRouterAddr != "" {
+				err = fileops.ReplaceStringInFile(file, "{brInternalAddr}", setup.BorderRouterAddr)
+				if err != nil {
+					return errors.New("Failed to configure brInternalAddr in " + file + ": " + err.Error())
+				}
+			}
+
+			if setup.DeployControl && setup.ControlAddr != "" {
+				err = fileops.ReplaceStringInFile(file, "{csApiAddr}", setup.ControlAddr)
+				if err != nil {
+					return errors.New("Failed to configure csApiAddr in " + file + ": " + err.Error())
+				}
+			}
 		}
 
 		err = fileops.ReplaceSingleBackslashWithDouble(file)
