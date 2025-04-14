@@ -43,7 +43,7 @@
                                 aria-describedby="articleDescription" x-text="cert.subject.CommonName"></h3>
 
                             <!-- Success Badge (Active) -->
-                            <span x-show="!cert.expired"
+                            <span x-show="!cert.missing && !cert.expired"
                                 class="ml-auto w-fit inline-flex overflow-hidden rounded-radius border border-success bg-surface text-xs font-medium text-success dark:border-success dark:bg-surface-dark dark:text-success">
                                 <span class="flex items-center gap-1 bg-success/10 px-2 py-1 dark:bg-success/10">
                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"
@@ -57,7 +57,7 @@
                             </span>
 
                             <!-- Danger Badge (Disconnected) -->
-                            <span x-show="cert.expired"
+                            <span x-show="cert && cert.expired"
                                 class="ml-auto w-fit inline-flex overflow-hidden rounded-radius border border-danger bg-surface text-xs font-medium text-danger dark:border-danger dark:bg-surface-dark dark:text-danger">
                                 <span class="flex items-center gap-1 bg-danger/10 px-2 py-1 dark:bg-danger/10">
                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"
@@ -66,7 +66,21 @@
                                             d="M9.401 3.003c1.155-2 4.043-2 5.197 0l7.355 12.748c1.154 2-.29 4.5-2.599 4.5H4.645c-2.309 0-3.752-2.5-2.598-4.5L9.4 3.003zM12 8.25a.75.75 0 01.75.75v3.75a.75.75 0 01-1.5 0V9a.75.75 0 01.75-.75zm0 8.25a.75.75 0 100-1.5.75.75 0 000 1.5z"
                                             clip-rule="evenodd" />
                                     </svg>
-                                    Disconnected
+                                    Expired
+                                </span>
+                            </span>
+
+                            <!-- Danger Badge (Disconnected) -->
+                            <span x-show="cert.missing"
+                                class="ml-auto w-fit inline-flex overflow-hidden rounded-radius border border-danger bg-surface text-xs font-medium text-danger dark:border-danger dark:bg-surface-dark dark:text-danger">
+                                <span class="flex items-center gap-1 bg-danger/10 px-2 py-1 dark:bg-danger/10">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"
+                                        fill="currentColor" class="size-4">
+                                        <path fill-rule="evenodd"
+                                            d="M9.401 3.003c1.155-2 4.043-2 5.197 0l7.355 12.748c1.154 2-.29 4.5-2.599 4.5H4.645c-2.309 0-3.752-2.5-2.598-4.5L9.4 3.003zM12 8.25a.75.75 0 01.75.75v3.75a.75.75 0 01-1.5 0V9a.75.75 0 01.75-.75zm0 8.25a.75.75 0 100-1.5.75.75 0 000 1.5z"
+                                            clip-rule="evenodd" />
+                                    </svg>
+                                    No Certificate Available
                                 </span>
                             </span>
                         </div>
@@ -183,8 +197,30 @@
                 try {
                     const response = await fetch('/api/v1/cppki/certs'); // Replace with the actual endpoint
                     this.chains = await response.json();
+
+                    if (this.chains.length === 0) {
+                        this.chains = [{
+                            subject: { CommonName: "No Certificate Found" },
+                            parent: { subject: { CommonName: "-" } },
+                            not_before: "-",
+                            not_after: "-",
+                            expired: true
+                        }];
+                    } else {
+                        this.chains.forEach(cert => {
+                            cert.expired = new Date(cert.not_after) < new Date();
+                        });
+                    }
+
                 } catch (error) {
-                    console.error("Error fetching router links:", error);
+                    console.error("Error fetching certificate chains:", error);
+                    this.chains = [{
+                        subject: { CommonName: "No Certificate Found" },
+                        parent: { subject: { CommonName: "-" } },
+                        not_before: "-",
+                        not_after: "-",
+                        missing: true,
+                    }];
                 }
             }
         }

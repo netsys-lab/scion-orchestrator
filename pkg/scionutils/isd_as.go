@@ -1,6 +1,10 @@
 package scionutils
 
-import "strings"
+import (
+	"strings"
+
+	"github.com/scionproto/scion/pkg/addr"
+)
 
 func GetISDFromISDAS(isdAS string) string {
 	parts := strings.Split(isdAS, "-")
@@ -8,4 +12,9 @@ func GetISDFromISDAS(isdAS string) string {
 		return ""
 	}
 	return parts[0]
+}
+
+func IsValidISDAS(isdAs string) bool {
+	_, err := addr.ParseIA(isdAs)
+	return err == nil
 }

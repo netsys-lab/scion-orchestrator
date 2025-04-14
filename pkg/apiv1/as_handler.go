@@ -2,10 +2,13 @@ package apiv1
 
 import (
 	"fmt"
+	"net"
 	"net/http"
 	"path/filepath"
 
 	"github.com/gin-gonic/gin"
+	"github.com/netsys-lab/scion-orchestrator/environment"
+	"github.com/netsys-lab/scion-orchestrator/pkg/netutils"
 	"github.com/netsys-lab/scion-orchestrator/pkg/scionutils"
 )
 
@@ -62,7 +65,41 @@ func AddSCIONLinksHandler(eng *gin.RouterGroup, configDir string) {
 
 		err := c.BindJSON(link)
 		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid JSON payload"})
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid JSON, please check your request"})
+			return
+		}
+
+		// Validate the link
+		if link.MTU <= 1000 || link.MTU > 8952 {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid link MTU, please set it between 1000 and 8952"})
+			return
+		}
+
+		// Validate the link
+		if link.BorderRouter == "" || link.Neighbor == "" || link.LinkType == "" || link.Remote == "" || link.Local == "" {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid link parameters, please fill all fields"})
+			return
+		}
+
+		udpAddr, err := net.ResolveUDPAddr("udp", link.Local)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": fmt.Sprintf("Invalid local IP %s", link.Local)})
+			return
+		}
+
+		isValidLink, err := netutils.IsLocalIPWithMTU(udpAddr.IP.String(), link.MTU)
+		if !isValidLink && err == nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": fmt.Sprintf("Local IP %s not found on this host or MTU exceeds interface MTU", link.Local)})
+			return
+		}
+		if err != nil {
+			fmt.Println("IP %s is invalid on this host", link.Local, "error: ", err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("Could not detect if IP %s is valid on this host", link.Local)})
+			return
+		}
+
+		if !scionutils.IsValidISDAS(link.Neighbor) {
+			c.JSON(http.StatusBadRequest, gin.H{"error": fmt.Sprintf("Invalid remote ISD-AS %s", link.Remote)})
 			return
 		}
 
@@ -89,6 +126,47 @@ func AddSCIONLinksHandler(eng *gin.RouterGroup, configDir string) {
 			return
 		}
 
-		c.JSON(http.StatusOK, gin.H{"message": "Links added successfully"})
+		// Standalone mode
+		if len(environment.StandaloneServices) > 0 {
+			routers := environment.GetStandaloneBorderRouters()
+			for _, router := range routers {
+				err := router.Restart()
+				if err != nil {
+					fmt.Println("Could not restart border router %s", err)
+					c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("Could not restart border router %s", router)})
+					return
+				}
+			}
+
+			controls := environment.GetStandaloneControlServices()
+			for _, control := range controls {
+				err := control.Restart()
+				if err != nil {
+					fmt.Println("Could not restart control service %s", err)
+					c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("Could not restart control service %s", control)})
+					return
+				}
+			}
+		} else {
+			routers := environment.GetBorderRouters()
+			for _, router := range routers {
+				err := router.Restart()
+				if err != nil {
+					c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("Could not restart border router %s", router)})
+					return
+				}
+			}
+
+			controls := environment.GetControlServices()
+			for _, control := range controls {
+				err := control.Restart()
+				if err != nil {
+					c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("Could not restart control service %s", control)})
+					return
+				}
+			}
+		}
+
+		c.JSON(http.StatusOK, link)
 	})
 }

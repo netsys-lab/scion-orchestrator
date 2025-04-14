@@ -8,7 +8,7 @@
                 class="whitespace-nowrap rounded-radius border border-primary dark:border-primary-dark bg-primary px-4 py-2 text-center text-sm font-medium tracking-wide text-on-primary transition hover:opacity-75 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary active:opacity-100 active:outline-offset-0 dark:bg-primary-dark dark:text-on-primary-dark dark:focus-visible:outline-primary-dark">Add
                 SCION Link</button>
             <div x-cloak x-show="modalIsOpen" x-transition.opacity.duration.200ms x-trap.inert.noscroll="modalIsOpen"
-                x-on:keydown.esc.window="modalIsOpen = false" x-on:click.self="modalIsOpen = false"
+                x-on:keydown.esc.window="modalIsOpen = false"
                 class="fixed inset-0 z-30 flex items-end justify-center bg-black/20 p-4 pb-8 backdrop-blur-md sm:items-center lg:p-8"
                 role="dialog" aria-modal="true" aria-labelledby="defaultModalTitle" style="display: none;">
                 <!-- Modal Dialog -->
@@ -31,6 +31,7 @@
                     </div>
                     <!-- Dialog Body -->
                     <div class="px-4 py-8">
+
                         <div
                             class="relative flex w-full max-w-xs flex-col gap-1 text-on-surface dark:text-on-surface-dark mb-3">
                             <label for="border_router" class="w-fit pl-0.5 text-sm">Border Router</label>
@@ -43,7 +44,6 @@
                             <select id="border_router" name="border_router"
                                 class="w-full appearance-none rounded-radius border border-outline bg-surface-alt px-4 py-2 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-not-allowed disabled:opacity-75 dark:border-outline-dark dark:bg-surface-dark-alt/50 dark:focus-visible:outline-primary-dark">
                                 <option value="br-1" selected>br-1</option>
-                                <option value="br-2">br-2</option>
                             </select>
                         </div>
                         <div class="flex w-full max-w-xs flex-col gap-1 text-on-surface dark:text-on-surface-dark mb-3">
@@ -88,12 +88,14 @@
                             </select>
                         </div>
                     </div>
+                    <div id="error-message" class="px-4 text-sm text-danger hidden">
+                    </div>
                     <!-- Dialog Footer -->
                     <div
                         class="flex flex-col-reverse justify-between gap-2 border-t border-outline bg-surface-alt/60 p-4 dark:border-outline-dark dark:bg-surface-dark/20 sm:flex-row sm:items-center md:justify-end">
                         <button x-on:click="modalIsOpen = false" type="button"
                             class="whitespace-nowrap rounded-radius px-4 py-2 text-center text-sm font-medium tracking-wide text-on-surface transition hover:opacity-75 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary active:opacity-100 active:outline-offset-0 dark:text-on-surface-dark dark:focus-visible:outline-primary-dark">Cancel</button>
-                        <button x-on:click="modalIsOpen = false" type="button" onclick="addSCIONLink()"
+                        <button type="button" id="button-save" onclick="addSCIONLink()"
                             class="whitespace-nowrap rounded-radius bg-primary border border-primary dark:border-primary-dark px-4 py-2 text-center text-sm font-medium tracking-wide text-on-primary transition hover:opacity-75 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary active:opacity-100 active:outline-offset-0 dark:bg-primary-dark dark:text-on-primary-dark dark:focus-visible:outline-primary-dark">Save</button>
                     </div>
                 </div>
@@ -156,6 +158,11 @@
                 try {
                     const response = await fetch('/api/v1/as/links'); // Replace with the actual endpoint
                     this.links = await response.json();
+
+                    if (!this.links) {
+                        this.links = [];
+                    }
+
                 } catch (error) {
                     console.error("Error fetching router links:", error);
                 }
@@ -173,20 +180,37 @@
             "mtu": parseInt(document.getElementById("mtu").value)
         }
 
+        const errorBox = document.getElementById("error-message");
+        const buttonSave = document.getElementById("button-save");
+        errorBox.classList.add("hidden");
+        errorBox.innerText = "";
+
+        buttonSave.innerText = "Saving...";
         fetch('/api/v1/as/links', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify(data)
-        }).then(response => {
+        }).then(async response => {
             if (response.ok) {
-                console.log("Link added successfully");
+                setTimeout(() => {
+                    buttonSave.innerText = "Save";
+                    window.location.reload();
+                }, 2000);
+
             } else {
+                buttonSave.innerText = "Save";
                 console.error("Failed to add link");
+                const returnErr = await response.json();
+                errorBox.innerText = `Failed to add link: ${returnErr.error}`;
+                errorBox.classList.remove("hidden");
             }
         }).catch(error => {
+            buttonSave.innerText = "Save";
             console.error("Error adding link:", error);
+            errorBox.innerText = `Unexpected error: ${error}`;
+            errorBox.classList.remove("hidden");
         });
     }
 </script>

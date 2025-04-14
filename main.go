@@ -152,6 +152,8 @@ func main() {
 			log.Fatal(err)
 		}
 
+		// log.Fatal(environment.Services)
+
 		go func() {
 			err = runBackgroundServices(env, config, scionConfig)
 			if err != nil {

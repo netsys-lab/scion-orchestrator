@@ -43,6 +43,26 @@ func GetBorderRouters() []*SystemService {
 	return services
 }
 
+func GetStandaloneControlServices() []*StandaloneService {
+	services := make([]*StandaloneService, 0)
+	for _, service := range StandaloneServices {
+		if strings.Contains(service.BinaryPath, "control") {
+			services = append(services, service)
+		}
+	}
+	return services
+}
+
+func GetStandaloneBorderRouters() []*StandaloneService {
+	services := make([]*StandaloneService, 0)
+	for _, service := range StandaloneServices {
+		if strings.Contains(service.BinaryPath, "router") {
+			services = append(services, service)
+		}
+	}
+	return services
+}
+
 type ServiceHealthCheck struct {
 }
 
@@ -363,7 +383,7 @@ func (s *SystemService) Start() error {
 	return nil
 }
 
-func (s *SystemService) ReStart() error {
+func (s *SystemService) Restart() error {
 	switch runtime.GOOS {
 	case "linux":
 
