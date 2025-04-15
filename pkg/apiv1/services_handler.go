@@ -38,9 +38,25 @@ func GetServiceDetailsHandler(eng *gin.RouterGroup) {
 			}
 		}
 
+		if serviceId == "scion-orchestrator" {
+			if metrics.Status.ServiceMode == "service" {
+				logs, err = osutils.GetJournalLogs("scion-orchestrator.service", 100)
+				if err != nil {
+					c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+					return
+				}
+			} else {
+				logs, err = osutils.GetFileLogs(filepath.Join(environment.HostEnv.LogPath, "sciond.log"), 100)
+				if err != nil {
+					c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+					return
+				}
+			}
+		}
+
 		if serviceId == "scion-dispatcher" {
 			if metrics.Status.ServiceMode == "service" {
-				logs, err = osutils.GetJournalLogs("scion-dispatcherr.service", 100)
+				logs, err = osutils.GetJournalLogs("scion-dispatcher.service", 100)
 				if err != nil {
 					c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 					return

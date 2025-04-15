@@ -103,6 +103,11 @@ func AddSCIONLinksHandler(eng *gin.RouterGroup, configDir string) {
 			return
 		}
 
+		if !netutils.IsUDPPortFree(link.Local) {
+			c.JSON(http.StatusBadRequest, gin.H{"error": fmt.Sprintf("UDP port %s is already in use", link.Local)})
+			return
+		}
+
 		// Load the topology file
 		topology, err := scionutils.LoadSCIONTopology(filepath.Join(configDir, "topology.json"))
 		if err != nil {

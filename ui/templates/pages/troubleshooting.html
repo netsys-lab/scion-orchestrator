@@ -74,6 +74,7 @@
                 try {
                     const response = await fetch(`/api/v1/services/${serviceId}`);
                     this.selectedService = await response.json();
+                    console.log(this.selectedService)
                 } catch (error) {
                     console.error(`Error fetching service ${serviceId}:`, error);
                 }

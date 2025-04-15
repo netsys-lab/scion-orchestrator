@@ -134,7 +134,7 @@ func UpdateHealthCheck() bool {
 			} else {
 				met := metrics.ServiceStatus{
 					Status: metrics.SERVICE_STATUS_RUNNING,
-					Id:     "scion-daemon",
+					Id:     "scion-dispatcher",
 				}
 				metrics.Status.Dispatcher = met
 			}

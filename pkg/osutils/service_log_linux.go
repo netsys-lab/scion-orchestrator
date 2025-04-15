@@ -2,6 +2,7 @@ package osutils
 
 import (
 	"bytes"
+	"fmt"
 	"os"
 	"os/exec"
 	"strconv"
@@ -19,5 +20,7 @@ func GetJournalLogs(service string, lines int) (string, error) {
 		return "", err
 	}
 
+	fmt.Println("journalctl", "-u", service, "--no-hostname", "-o", "cat", "-e", "--lines", strconv.Itoa(lines), "--no-pager")
+	fmt.Println(out.String())
 	return out.String(), nil
 }

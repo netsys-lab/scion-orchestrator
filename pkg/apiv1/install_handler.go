@@ -3,6 +3,7 @@ package apiv1
 import (
 	"fmt"
 	"log"
+	"net"
 	"os"
 	"path/filepath"
 	"time"
@@ -11,6 +12,8 @@ import (
 	"github.com/netsys-lab/scion-orchestrator/conf"
 	"github.com/netsys-lab/scion-orchestrator/environment"
 	"github.com/netsys-lab/scion-orchestrator/pkg/metrics"
+	"github.com/netsys-lab/scion-orchestrator/pkg/netutils"
+	"github.com/netsys-lab/scion-orchestrator/pkg/scionutils"
 )
 
 func DoInstallHandler(eng *gin.RouterGroup, env *environment.HostEnvironment, scionConfig *conf.SCIONConfig, asConfig *conf.Config) {
@@ -45,6 +48,67 @@ func runInstall(env *environment.HostEnvironment, asConfig *conf.Config, scionCo
 
 	// TODO: Proper error handling, do not fatal in here...
 	// TODO: Mcast Bootstrapping, and all the other things too
+
+	if setup.InstallDir == "" {
+		return fmt.Errorf("InstallDir is empty")
+	}
+	if setup.AdminUsername == "" || setup.AdminPassword == "" {
+		return fmt.Errorf("AdminUsername or AdminPassword is empty")
+	}
+
+	if setup.DeployBorderRouter {
+		if setup.BorderRouterAddr == "" {
+			return fmt.Errorf("BorderRouterAddr is empty despite having DeployBorderRouter set to true")
+		}
+
+		udpAddr, err := net.ResolveUDPAddr("udp", setup.BorderRouterAddr)
+		if err != nil {
+			return fmt.Errorf("Invalid local IP %s", setup.BorderRouterAddr)
+
+		}
+
+		isValidLink, err := netutils.IsLocalIPWithMTU(udpAddr.IP.String(), 1400) // Default MTU, should always work
+		if !isValidLink && err == nil {
+			return fmt.Errorf("Local IP %s not found on this host or MTU exceeds interface MTU", setup.BorderRouterAddr)
+		}
+		if err != nil {
+			fmt.Println("IP %s is invalid on this host", setup.BorderRouterAddr, "error: ", err)
+			return fmt.Errorf("Could not detect if IP %s is valid on this host", setup.BorderRouterAddr)
+		}
+
+		if !netutils.IsUDPPortFree(setup.BorderRouterAddr) {
+			return fmt.Errorf("UDP port %s is already in use", setup.BorderRouterAddr)
+		}
+	}
+
+	if setup.DeployControl {
+		if setup.ControlAddr == "" {
+			return fmt.Errorf("ControlAddr is empty despite having DeployControl set to true")
+		}
+
+		tcpAddr, err := net.ResolveTCPAddr("tcp", setup.ControlAddr)
+		if err != nil {
+			return fmt.Errorf("Invalid local IP %s", setup.ControlAddr)
+
+		}
+
+		isValidLink, err := netutils.IsLocalIPWithMTU(tcpAddr.IP.String(), 1400) // Default MTU, should always work
+		if !isValidLink && err == nil {
+			return fmt.Errorf("Local IP %s not found on this host or MTU exceeds interface MTU", setup.ControlAddr)
+		}
+		if err != nil {
+			fmt.Println("IP %s is invalid on this host", setup.ControlAddr, "error: ", err)
+			return fmt.Errorf("Could not detect if IP %s is valid on this host", setup.ControlAddr)
+		}
+
+		if !netutils.IsTCPPortFree(setup.ControlAddr) {
+			return fmt.Errorf("UDP port %s is already in use", setup.ControlAddr)
+		}
+	}
+
+	if !scionutils.IsValidISDAS(setup.ISDAs) {
+		return fmt.Errorf("Invalid ISD-AS %s", setup.ISDAs)
+	}
 
 	if setup.InstallDir != "" {
 		env.SetConfigPath(setup.InstallDir)

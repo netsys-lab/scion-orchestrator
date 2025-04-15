@@ -8,22 +8,6 @@
     <title>SCION Orchestrator Dashboard</title>
     <script src="/static/htmx.min.js"></script>
     <script src="/static/alpine-min.js" defer></script>
-    <script>
-        async function fetchStatus() {
-            try {
-                let response = await fetch('/api/v1/status'); // Modify endpoint accordingly
-                let data = await response.json();
-                return data;
-            } catch (error) {
-                console.error("Error fetching status:", error);
-                return null;
-            }
-        }
-
-        window.onload = function () {
-            fetchStatus();
-        }
-    </script>
     <script src="/static/tailwindv4.js"></script>
     <style type="text/tailwindcss">
         @theme {
