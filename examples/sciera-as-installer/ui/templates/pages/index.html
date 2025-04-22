@@ -1,0 +1,196 @@
+{{ template "basetop" . }}
+
+
+<!-- Main Container -->
+<div class="container mx-auto p-6 grid grid-cols-1 lg:grid-cols-2 gap-12" x-data="statusPage()">
+
+    <!-- Left Column: First Steps -->
+    <div class="bg-neutral-800 p-6 rounded-lg shadow-md">
+        <header class="text-center mb-12">
+            <h1 class="text-3xl font-bold text-white">Welcome to Scion Orchestrator</h1>
+            <p class="mt-4 text-base text-neutral-300">A powerful tool to manage your SCION Autonomous System.</p>
+        </header>
+
+        <!-- First Steps Section -->
+        <section class="mb-12">
+            <h2 class="text-xl font-semibold text-white mb-4">First Steps</h2>
+            <ul class="space-y-4 text-base text-neutral-100">
+                <li>
+                    <span class="font-semibold">1)</span> <a class="text-info" href="/cryptography"> Generate a
+                        Certiicate
+                        Signing Request</a> and send
+                    it to
+                    your CA.
+                </li>
+                <li>
+                    <span class="font-semibold">2)</span> <a class="text-info" href="/cryptography">Upload your
+                        certificate chain </a> once received from
+                    your CA.
+                </li>
+                <li>
+                    <span class="font-semibold">3)</span> <a class="text-info" href="/connectivity">Add your first SCION
+                        link </a> to get upstream
+                    connectivity.
+                </li>
+            </ul>
+        </section>
+
+        <!-- Instructions Section -->
+        <section class="mb-12">
+            <h2 class="text-xl font-semibold text-white mb-4">Need Help?</h2>
+            <p class="text-base text-neutral-300">
+                Follow the steps above to configure your SCION AS and ensure it's up and running.
+                If you need assistance, visit our <a href="#" class="text-info">documentation</a> or reach out to
+                support.
+            </p>
+        </section>
+
+    </div>
+
+    <!-- Right Column: Status Page -->
+    <div class="bg-neutral-800 p-6 rounded-lg shadow-md">
+        <h2 class="text-xl font-semibold text-white mb-4">System Status</h2>
+
+        <!-- Bootstrap Server Status -->
+        <div class="mb-4">
+            <p class="font-semibold text-neutral-300">Bootstrap Server: <span class="font-bold"
+                    :class="bootstrapServerStatusClass" x-text="bootstrapServerStatus"></span></p>
+            <p class="text-xs text-neutral-500">ID: <span x-text="bootstrapServerId"></span></p>
+        </div>
+
+        <!-- Dispatcher Status -->
+        <div class="mb-4">
+            <p class="font-semibold text-neutral-300">Dispatcher: <span class="font-bold" :class="dispatcherStatusClass"
+                    x-text="dispatcherStatus"></span></p>
+            <p class="text-xs text-neutral-500">ID: <span x-text="dispatcherId"></span></p>
+        </div>
+
+        <!-- Daemon Status -->
+        <div class="mb-4">
+            <p class="font-semibold text-neutral-300">Daemon: <span class="font-bold" :class="daemonStatusClass"
+                    x-text="daemonStatus"></span></p>
+            <p class="text-xs text-neutral-500">ID: <span x-text="daemonId"></span></p>
+        </div>
+
+        <!-- Certificate Renewal Status -->
+        <div class="mb-4">
+            <p class="font-semibold text-neutral-300">Certificate Renewal: <span class="font-bold"
+                    :class="certificateRenewalStatusClass" x-text="certificateRenewalStatus"></span></p>
+            <p class="text-xs text-neutral-500">ID: <span x-text="certificateRenewalId"></span></p>
+            <p class="text-xs text-neutral-500"><span x-text="certificateRenewalMessage"></span></p>
+        </div>
+
+        <!-- Control Services Status -->
+        <div class="mb-4" x-show="Object.keys(controlServices).length > 0">
+            <p class="font-semibold text-neutral-300">Control Services</p>
+            <template x-for="service in controlServices" :key="service.Id">
+                <div class="text-base">
+                    <span class="text-base" x-text="service.Id"></span>: <span class="font-bold"
+                        :class="service.statusClass" x-text="service.Status"></span>
+                    <br />
+                    <span class="text-xs text-neutral-500" x-text="service.Message"></span>
+
+                </div>
+            </template>
+        </div>
+
+        <!-- Border Routers Status -->
+        <div class="mb-4" x-show="borderRouters.length > 0">
+            <p class="font-semibold text-neutral-300">Border Routers</p>
+            <template x-for="router in borderRouters" :key="router.Id">
+                <div class="text-base">
+                    <span class="text-base" x-text="router.Id"></span>: <span class="font-bold"
+                        :class="router.statusClass" x-text="router.Status"></span> <br />
+                    <span class="text-xs text-neutral-500" x-text="router.Message"></span>
+                </div>
+            </template>
+        </div>
+
+        <!-- Last Update Time -->
+        <div class="mt-6" x-show="lastUpdated">
+            <p class="text-base text-neutral-500">Last Updated: <span class="font-semibold text-neutral-200"
+                    x-text="lastUpdated"></span></p>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    function statusPage() {
+        return {
+            bootstrapServerStatus: 'Loading...',
+            dispatcherStatus: 'Loading...',
+            daemonStatus: 'Loading...',
+            certificateRenewalStatus: 'Loading...',
+            certificateRenewalMessage: 'Loading...',
+            controlServices: [],
+            borderRouters: [],
+            lastUpdated: 'Loading...',
+            bootstrapServerId: '',
+            certificateRenewalId: 'certificate-renewal',
+            dispatcherId: '',
+            daemonId: '',
+            daemonMessage: '',
+            dispatcherMessage: '',
+
+
+            // Status Classes for each service
+            bootstrapServerStatusClass: 'text-gray-500',
+            dispatcherStatusClass: 'text-gray-500',
+            daemonStatusClass: 'text-gray-500',
+            certificateRenewalStatusClass: 'text-gray-500',
+
+            async fetchStatus() {
+                try {
+                    const response = await fetch('/api/v1/status');
+                    const data = await response.json();
+
+                    this.bootstrapServerStatus = data.BootstrapServer.Status;
+                    this.dispatcherStatus = data.Dispatcher.Status;
+                    this.daemonStatus = data.Daemon.Status;
+                    this.certificateRenewalStatus = data.CertificateRenewal.Status;
+                    this.certificateRenewalMessage = data.CertificateRenewal.Message;
+                    this.controlServices = Object.values(data.ControlServices);
+                    this.borderRouters = Object.values(data.BorderRouters);
+                    this.lastUpdated = data.LastUpdated;
+
+                    this.bootstrapServerId = data.BootstrapServer.Id || "bootstrap-server";
+                    this.dispatcherId = data.Dispatcher.Id;
+                    this.daemonId = data.Daemon.Id;
+                    this.dispatcherMessage = data.Dispatcher.Message;
+                    this.daemonMessage = data.Daemon.Message;
+
+                    // Set the status classes
+                    this.bootstrapServerStatusClass = this.getStatusClass(this.bootstrapServerStatus);
+                    this.dispatcherStatusClass = this.getStatusClass(this.dispatcherStatus);
+                    this.daemonStatusClass = this.getStatusClass(this.daemonStatus);
+                    this.certificateRenewalStatusClass = this.getStatusClass(this.certificateRenewalStatus);
+
+                    for (const service of this.controlServices) {
+                        service.statusClass = this.getStatusClass(service.Status);
+                    }
+
+                    for (const router of this.borderRouters) {
+                        router.statusClass = this.getStatusClass(router.Status);
+                    }
+
+                } catch (error) {
+                    console.error('Error fetching status:', error);
+                }
+            },
+
+            getStatusClass(status) {
+                if (status === 'running') return 'text-success';
+                if (status === 'error') return 'text-danger';
+                return 'text-neutral-500';
+            },
+
+            init() {
+                this.fetchStatus();
+            }
+        }
+    }
+</script>
+
+
+{{ template "basebottom" . }}

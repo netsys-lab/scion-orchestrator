@@ -1,0 +1,84 @@
+{{ template "basetop" . }}
+
+<div x-data="settingsForm()" class="max-w-4xl mx-auto">
+    <h1 class="text-2xl font-bold mb-6">Settings</h1>
+
+    <form class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+        <!-- General Settings -->
+        <div>
+            <h2 class="font-bold mb-2">General</h2>
+            <div class="flex flex-col gap-2">
+                <div class="flex w-full max-w-xs flex-col gap-1 text-on-surface dark:text-on-surface-dark">
+                    <label class="w-fit pl-0.5 text-sm">Command</label>
+                    <input disabled type="text" x-model="config.command"
+                        class="w-full rounded-radius border border-outline bg-surface-alt px-2 py-2 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-not-allowed disabled:opacity-75 dark:border-outline-dark dark:bg-surface-dark-alt/50 dark:focus-visible:outline-primary-dark">
+                </div>
+
+                <div class="flex w-full max-w-xs flex-col gap-1 text-on-surface dark:text-on-surface-dark">
+                    <label disabled class="w-fit pl-0.5 text-sm">Mode</label>
+                    <input type="text" x-model="config.mode"
+                        class="w-full rounded-radius border border-outline bg-surface-alt px-2 py-2 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-not-allowed disabled:opacity-75 dark:border-outline-dark dark:bg-surface-dark-alt/50 dark:focus-visible:outline-primary-dark">
+                </div>
+
+                <div class="flex w-full max-w-xs flex-col gap-1 text-on-surface dark:text-on-surface-dark">
+                    <label disabled class="w-fit pl-0.5 text-sm">ISD-AS</label>
+                    <input type="text" x-model="config.isdAs"
+                        class="w-full rounded-radius border border-outline bg-surface-alt px-2 py-2 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-not-allowed disabled:opacity-75 dark:border-outline-dark dark:bg-surface-dark-alt/50 dark:focus-visible:outline-primary-dark">
+                </div>
+            </div>
+        </div>
+
+        <!-- UI -->
+        <div>
+            <h2 class="font-bold mb-2">UI/API HTTPS Server</h2>
+            <div class="flex w-full max-w-xs flex-col gap-1 text-on-surface dark:text-on-surface-dark">
+                <label class="w-fit pl-0.5 text-sm">Server Listen Address</label>
+                <input type="text" x-model="config.ui.server"
+                    class="w-full rounded-radius border border-outline bg-surface-alt px-2 py-2 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-not-allowed disabled:opacity-75 dark:border-outline-dark dark:bg-surface-dark-alt/50 dark:focus-visible:outline-primary-dark">
+            </div>
+        </div>
+
+        <!-- Bootstrap -->
+        <div>
+            <h2 class="font-bold mb-2">Bootstrap</h2>
+            <div class="flex w-full max-w-xs flex-col gap-1 text-on-surface dark:text-on-surface-dark">
+                <label class="w-fit pl-0.5 text-sm">Bootstrap Server</label>
+                <input type="text" x-model="config.bootstrap.server" value="127.0.0.1:8041"
+                    class="w-full rounded-radius border border-outline bg-surface-alt px-2 py-2 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-not-allowed disabled:opacity-75 dark:border-outline-dark dark:bg-surface-dark-alt/50 dark:focus-visible:outline-primary-dark">
+            </div>
+
+            <div class="flex w-full max-w-xs flex-col gap-1 text-on-surface dark:text-on-surface-dark">
+                <label class="w-fit pl-0.5 text-sm">AllowedSubnets</label>
+                <input type="text" x-model="config.bootstrap.allowed_subnets" value="141.44.0.0/16, 10.44.25.0/24"
+                    class="w-full rounded-radius border border-outline bg-surface-alt px-2 py-2 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-not-allowed disabled:opacity-75 dark:border-outline-dark dark:bg-surface-dark-alt/50 dark:focus-visible:outline-primary-dark">
+            </div>
+
+            <div class="flex w-full max-w-xs flex-col gap-1 text-on-surface dark:text-on-surface-dark">
+                <label class="w-fit pl-0.5 text-sm">Topology Overwrites for Bootstrapping</label>
+                <input type="text" x-model="config.bootstrap.allowed_subnets"
+                    value="border_routers.br-1.internal_addr=127.0.0.1:30004"
+                    class="w-full rounded-radius border border-outline bg-surface-alt px-2 py-2 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-not-allowed disabled:opacity-75 dark:border-outline-dark dark:bg-surface-dark-alt/50 dark:focus-visible:outline-primary-dark">
+            </div>
+        </div>
+
+        <!-- Metrics -->
+        <div>
+            <h2 class="font-bold mb-2">Metrics</h2>
+            <div class="flex w-full max-w-xs flex-col gap-1 text-on-surface dark:text-on-surface-dark">
+                <label class="w-fit pl-0.5 text-sm">Metrics Server</label>
+                <input type="text" x-model="config.metrics.server"
+                    class="w-full rounded-radius border border-outline bg-surface-alt px-2 py-2 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-not-allowed disabled:opacity-75 dark:border-outline-dark dark:bg-surface-dark-alt/50 dark:focus-visible:outline-primary-dark">
+            </div>
+        </div>
+
+        <!-- Save Button -->
+        <div class="md:col-span-2 text-right">
+            <button type="submit" class="bg-primary text-on-primary px-4 py-2 rounded-radius hover:opacity-75">Save
+                Settings</button>
+        </div>
+
+    </form>
+</div>
+
+{{ template "basebottom" . }}
