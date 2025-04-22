@@ -5,6 +5,8 @@ import (
 	"net"
 	"net/http"
 	"path/filepath"
+	"slices"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/netsys-lab/scion-orchestrator/environment"
@@ -81,9 +83,27 @@ func AddSCIONLinksHandler(eng *gin.RouterGroup, configDir string) {
 			return
 		}
 
+		// TODO: Ensure remote Addr is a valid UDP addr
+
+		remoteUDPAddr, err := net.ResolveUDPAddr("udp", link.Remote)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": fmt.Sprintf("Invalid remote IP %s", link.Local)})
+			return
+		}
+
+		if remoteUDPAddr.Port == 0 {
+			c.JSON(http.StatusBadRequest, gin.H{"error": fmt.Sprintf("Invalid remote port %s", link.Local)})
+			return
+		}
+
 		udpAddr, err := net.ResolveUDPAddr("udp", link.Local)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": fmt.Sprintf("Invalid local IP %s", link.Local)})
+			return
+		}
+
+		if udpAddr.Port == 0 {
+			c.JSON(http.StatusBadRequest, gin.H{"error": fmt.Sprintf("Invalid local port %s", link.Local)})
 			return
 		}
 
@@ -112,6 +132,21 @@ func AddSCIONLinksHandler(eng *gin.RouterGroup, configDir string) {
 		topology, err := scionutils.LoadSCIONTopology(filepath.Join(configDir, "topology.json"))
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not load the topology file"})
+			return
+		}
+
+		if !slices.Contains(topology.Attributes, "core") && strings.Contains(link.LinkType, "CORE") {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Cannot add core link to non-core AS"})
+			return
+		}
+
+		if slices.Contains(topology.Attributes, "core") && strings.Contains(link.LinkType, "PARENT") {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Cannot add parent link to core AS"})
+			return
+		}
+
+		if slices.Contains(topology.Attributes, "core") && strings.Contains(link.LinkType, "PEER") {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Cannot add peering link to core AS"})
 			return
 		}
 
