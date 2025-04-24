@@ -1,0 +1,10 @@
+command = "service"
+isd_as = "{isdAs}"
+mode = "as"
+
+[metrics]
+prometheus = "127.0.0.1:33401"
+
+[bootstrap]
+server = "127.0.0.1:8041"
+# allowedSubnets = [""]

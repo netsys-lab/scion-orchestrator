@@ -1,0 +1,90 @@
+{{ template "basetop" . }}
+
+<div x-data="scionTabs()" x-init="fetchData()" class="w-full">
+    <div x-on:keydown.right.prevent="$focus.wrap().next()" x-on:keydown.left.prevent="$focus.wrap().previous()"
+        class="flex gap-2 overflow-x-auto border-b border-outline dark:border-outline-dark" role="tablist"
+        aria-label="tab options">
+        <!-- Dynamically Generated Service Tabs -->
+        <template x-for="(service, index) in services" :key="service.Id">
+            <button x-on:click="selectTab(service.Id)" x-bind:aria-selected="selectedTab === service.Id"
+                x-bind:tabindex="selectedTab === service.Id ? '0' : '-1'"
+                x-bind:class="selectedTab === service.Id ? 'font-bold text-primary border-b-2 border-primary dark:border-primary-dark dark:text-primary-dark' : 'text-on-surface font-medium dark:text-on-surface-dark dark:hover:border-b-outline-dark-strong dark:hover:text-on-surface-dark-strong hover:border-b-2 hover:border-b-outline-strong hover:text-on-surface-strong'"
+                class="h-min px-4 py-2 text-sm" type="button" role="tab" x-bind:aria-controls="'tabpanel' + service.Id"
+                x-text="service.Id">
+            </button>
+        </template>
+    </div>
+
+    <!-- Content Area -->
+    <div class="px-2 py-4 text-on-surface dark:text-on-surface-dark">
+        <template x-for="service in services" :key="service.Id">
+            <div x-cloak x-show="selectedTab === service.Id" x-bind:id="'tabpanel' + service.Id" role="tabpanel"
+                class="flex flex-col">
+                <div><b x-text="service.Id"></b> Service<br>
+                    <strong>Status:</strong> <span x-text="selectedService.status"></span><br>
+                </div>
+                <div class="flex mt-4 w-full flex-col gap-1 text-on-surface dark:text-on-surface-dark">
+                    <label for="textArea" class="w-fit pl-0.5 text-sm">Log</label>
+                    <textarea x-text="selectedService.logs" id="textArea" rows="30" cols="70"
+                        class="w-full flex rounded-radius border border-outline bg-surface-alt px-2.5 py-2 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-not-allowed disabled:opacity-75 dark:border-outline-dark dark:bg-surface-dark-alt/50 dark:focus-visible:outline-primary-dark"
+                        placeholder="We'd love to hear from you..."></textarea>
+                </div>
+            </div>
+        </template>
+    </div>
+</div>
+
+<script>
+    function scionTabs() {
+        return {
+            services: [],
+            selectedTab: null,
+            selectedService: {},
+
+            async fetchData() {
+                try {
+                    const response = await fetch('/api/v1/status'); // Replace with actual API endpoint
+                    const data = await response.json();
+
+                    this.services = [];
+
+                    // Extract services with IDs from different sections
+                    const serviceSources = [
+                        data.BootstrapServer,
+                        data.Dispatcher,
+                        data.Daemon,
+                        ...Object.values(data.ControlServices || {}),
+                        ...Object.values(data.BorderRouters || {})
+                    ];
+
+                    // Filter out empty services
+                    this.services = serviceSources.filter(service => service.Id);
+
+                    // Auto-select first tab if available
+                    if (this.services.length > 0) {
+                        this.selectTab(this.services[0].Id);
+                    }
+
+                } catch (error) {
+                    console.error("Error fetching service data:", error);
+                }
+            },
+
+            async fetchService(serviceId) {
+                try {
+                    const response = await fetch(`/api/v1/services/${serviceId}`);
+                    this.selectedService = await response.json();
+                    console.log(this.selectedService)
+                } catch (error) {
+                    console.error(`Error fetching service ${serviceId}:`, error);
+                }
+            },
+
+            selectTab(serviceId) {
+                this.selectedTab = serviceId;
+                this.fetchService(serviceId);
+            }
+        };
+    }
+</script>
+{{ template "basebottom" . }}

@@ -1,0 +1,9 @@
+[general]
+config_dir = "{configDir}"
+id = "br-1"
+
+[metrics]
+prometheus = "127.0.0.1:30401"
+
+[log.console]
+level = "info"

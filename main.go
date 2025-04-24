@@ -132,8 +132,8 @@ func main() {
 
 		go func() {
 			time.Sleep(2 * time.Second)
-			log.Println("[Main] UI and API running! Please open https://localhost:8443 in your browser if you're running this locally.")
-			log.Println("[Main] If you're running this on a remote server, please enable ssh port forwarding via ssh -L 8443:localhost:8443 user@remote-server.")
+			log.Println("[Main] UI and API running! Please open https://localhost:8843 in your browser if you're running this locally.")
+			log.Println("[Main] If you're running this on a remote server, please enable ssh port forwarding via ssh -L 8843:localhost:8843 user@remote-server.")
 			log.Println("[Main] Note: This process will be stopped after the installation finished successfully.")
 		}()
 

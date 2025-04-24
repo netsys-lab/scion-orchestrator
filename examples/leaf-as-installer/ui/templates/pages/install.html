@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SCION Orchestrator Dashboard</title>
+    <script src="/static/htmx.min.js"></script>
+    <script src="/static/alpine-min.js" defer></script>
+    <script src="/static/tailwindv4.js"></script>
+    <style type="text/tailwindcss">
+        @theme {
+            /* Light Theme */
+            --color-surface: var(--color-white);
+            --color-surface-alt: var(--color-neutral-50);
+            --color-on-surface: var(--color-neutral-600);
+            --color-on-surface-strong: var(--color-neutral-900);
+            --color-primary: var(--color-black);
+            --color-on-primary: var(--color-neutral-100);
+            --color-secondary: var(--color-neutral-800);
+            --color-on-secondary: var(--color-white);
+            --color-outline: var(--color-neutral-300);
+            --color-outline-strong: var(--color-neutral-800);
+
+            /* Dark Theme */
+            --color-surface-dark: var(--color-neutral-950);
+            --color-surface-dark-alt: var(--color-neutral-900);
+            --color-on-surface-dark: var(--color-neutral-300);
+            --color-on-surface-dark-strong: var(--color-white);
+            --color-primary-dark: var(--color-white);
+            --color-on-primary-dark: var(--color-black);
+            --color-secondary-dark: var(--color-neutral-300);
+            --color-on-secondary-dark: var(--color-black);
+            --color-outline-dark: var(--color-neutral-700);
+            --color-outline-dark-strong: var(--color-neutral-300);
+
+            /* Shared Colors */
+            --color-info: var(--color-sky-500);
+            --color-on-info: var(--color-white);
+            --color-success: var(--color-green-500);
+            --color-on-success: var(--color-white);
+            --color-warning: var(--color-amber-500);
+            --color-on-warning: var(--color-white);
+            --color-danger: var(--color-red-500);
+            --color-on-danger: var(--color-white);
+
+            /* Border Radius */
+            --radius-radius: var(--radius-sm);
+        }
+
+        body {
+            color: var(--color-on-surface-dark);
+        }
+
+        .input {
+            @apply w-full rounded-radius border border-outline bg-surface-alt px-2 py-2 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-not-allowed disabled:opacity-75 dark:border-outline-dark dark:bg-surface-dark-alt/50 dark:focus-visible:outline-primary-dark;
+        }
+    </style>
+</head>
+
+<body>
+    <div x-data="wizard()"
+        class="min-h-screen bg-surface-dark text-on-surface-dark p-6 flex items-center justify-center">
+        <div class="w-full max-w-2xl rounded-2xl bg-surface-dark-alt shadow-xl ring-1 ring-outline-dark p-6 space-y-6">
+            <!-- Header -->
+            <div class="text-center">
+                <h1 class="text-2xl font-bold text-on-surface-dark-strong">Install Wizard</h1>
+                <p class="text-on-surface-dark mt-1">Follow the steps to complete your setup</p>
+            </div>
+
+            <!-- Steps Indicator -->
+            <div class="flex justify-between items-center text-sm text-on-surface-dark">
+                <template x-for="(step, index) in steps" :key="index">
+                    <div class="flex flex-col items-center cursor-pointer group" @click="goToStep(index + 1)">
+                        <div :class="{
+                                'bg-primary-dark text-on-primary-dark': currentStep === index + 1,
+                                'bg-outline-dark text-on-surface-dark': currentStep !== index + 1,
+                            }"
+                            class="flex items-center justify-center size-9 rounded-full font-semibold transition-colors duration-300">
+                            <template x-if="index + 1 < currentStep">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="3"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                                </svg>
+                            </template>
+                            <template x-if="index + 1 >= currentStep">
+                                <span x-text="index + 1"></span>
+                            </template>
+                        </div>
+                        <span
+                            class="mt-1 text-xs text-center w-20 group-hover:text-on-surface-dark-strong transition-colors"
+                            x-text="step.label"></span>
+                    </div>
+                </template>
+            </div>
+
+            <!-- Step Content -->
+            <div class="bg-surface-dark p-4 rounded-xl ring-1 ring-outline-dark min-h-[120px]">
+                <template x-if="steps[currentStep - 1]">
+                    <div>
+                        <h2 class="text-lg font-semibold text-on-surface-dark-strong mb-2"
+                            x-text="steps[currentStep - 1].title"></h2>
+                        <p class="text-sm text-on-surface-dark" x-text="steps[currentStep - 1].description"></p>
+                        <div x-html="steps[currentStep - 1].html"></div>
+                    </div>
+                </template>
+            </div>
+
+            <!-- Actions -->
+            <div class="flex justify-between items-center">
+                <button @click="prevStep"
+                    class="px-4 py-2 rounded-lg text-sm bg-surface-dark-alt ring-1 ring-outline-dark text-on-surface-dark hover:bg-outline-dark transition disabled:opacity-50"
+                    :disabled="currentStep === 1">
+                    Back
+                </button>
+                <button @click="nextStep"
+                    class="px-4 py-2 rounded-lg text-sm bg-primary-dark text-on-primary-dark hover:bg-outline-dark hover:text-on-surface-dark transition disabled:opacity-50"
+                    :disabled="loading"
+                    x-text="currentStep === steps.length ? (loading ? 'Installing...' : 'Finish') : 'Next'">
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function wizard() {
+            return {
+                currentStep: 1,
+                loading: false,
+                errorMessage: "",
+                successMessage: "",
+                formData: {
+                    isdAs: "1-150",
+                    installDir: "/etc/scion/",
+                    deployBorderRouter: true,
+                    borderRouterAddr: "127.0.0.1:31001",
+                    deployControl: true,
+                    controlAddr: "127.0.0.1:30254",
+                    adminUsername: "admin",
+                    adminPassword: "admin"
+                },
+                steps: [
+                    {
+                        label: "Welcome",
+                        title: "Welcome to the Installer",
+                        description: "Let’s guide you through the setup process step-by-step.",
+                        html: ``
+                    },
+                    {
+                        label: "General",
+                        title: "Configure your Node here",
+                        html: `
+                        <div>
+                            <div class="mb-4">
+                                <label for="isdAs" class="text-sm block mb-1">ISD-AS</label>
+                                <input x-model="formData.isdAs" type="text" id="isdAs" class="input" placeholder="71-201020" />
+                            </div>
+                            <div>
+                                <label for="installDir" class="text-sm block mb-1">Install Directory</label>
+                                <input x-model="formData.installDir" type="text" id="installDir" class="input" />
+                            </div>
+                        </div>
+                        `
+                    },
+                    {
+                        label: "Configuration",
+                        title: "Configuration Settings",
+                        html: `
+                        <div class="space-y-4">
+                            <label class="flex items-center gap-2">
+                                <input type="checkbox" x-model="formData.deployBorderRouter" />
+                                <span>Deploy Border Router</span>
+                            </label>
+                            <div>
+                                <label for="borderRouterAddr" class="text-sm block mb-1">Internal Addr</label>
+                                <input x-model="formData.borderRouterAddr" type="text" id="borderRouterAddr" class="input" placeholder="10.0.0.1:30001" />
+                            </div>
+                            <label class="flex items-center gap-2">
+                                <input type="checkbox" x-model="formData.deployControl" />
+                                <span>Deploy Control Service</span>
+                            </label>
+                            <div>
+                                <label for="controlAddr" class="text-sm block mb-1">API Addr</label>
+                                <input x-model="formData.controlAddr" type="text" id="controlAddr" class="input" placeholder="10.0.0.1:30254" />
+                            </div>
+                        </div>
+                        `
+                    },
+                    {
+                        label: "Account",
+                        title: "Set Admin Credentials for Api/UI",
+                        html: `
+                        <div class="space-y-4">
+                            <div>
+                                <label for="adminUsername" class="text-sm block mb-1">Admin Username</label>
+                                <input x-model="formData.adminUsername" type="text" id="adminUsername" class="input" placeholder="admin" />
+                            </div>
+                            <div>
+                                <label for="adminPassword" class="text-sm block mb-1">Admin Password</label>
+                                <input x-model="formData.adminPassword" type="password" id="adminPassword" class="input" placeholder="••••••••" />
+                            </div>
+                        </div>
+                        `
+                    },
+                    {
+                        label: "Install",
+                        title: "Do installation",
+                        description: "Click Finish to perform your installation.",
+                        html: `
+                        <div class="text-sm mb-2">
+                            All settings are ready. Click Finish to install.
+                        </div>
+                        <template x-if="errorMessage">
+                            <div class="text-sm text-red-500 font-semibold" x-text="errorMessage"></div>
+                        </template>
+                        <template x-if="successMessage">
+                            <div class="text-sm text-green-400 font-semibold" x-text="successMessage"></div>
+                        </template>
+                        `
+                    }
+                ],
+                nextStep() {
+                    if (this.currentStep < this.steps.length) {
+                        this.currentStep++;
+                    } else {
+                        this.submit();
+                    }
+                },
+                prevStep() {
+                    if (this.currentStep > 1) this.currentStep--;
+                },
+                goToStep(step) {
+                    this.currentStep = step;
+                },
+                async submit() {
+                    this.errorMessage = "";
+                    this.successMessage = "";
+                    this.loading = true;
+                    try {
+                        const res = await fetch('/api/v1/install', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(this.formData)
+                        });
+
+                        if (!res.ok) {
+                            const errText = await res.text();
+                            this.errorMessage = `Installation failed: ${errText || 'Unknown error'}`;
+                            return;
+                        }
+
+                        this.successMessage = "🎉 Installation successful! Please reload the page and enter your credentials to get started!";
+                    } catch (e) {
+                        console.error(e);
+                        this.errorMessage = "Unexpected error during installation. Check the console.";
+                    } finally {
+                        this.loading = false;
+                    }
+                }
+            }
+        }
+    </script>
+</body>
+
+</html>
