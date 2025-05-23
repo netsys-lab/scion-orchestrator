@@ -25,14 +25,17 @@ type CertificateRenewer struct {
 	ConfigDir        string
 	ISDAS            string
 	TRC              string
+
+	listFilesByPrefixAndSuffix func(root string, prefix string, suffix string) ([]string, error)
 }
 
 func NewCertificateRenewer(configDir string, ISDAS string, renewBeforeHours int) *CertificateRenewer {
 	log.Println("[Renewer] Creating new certificate renewer, isdAS ", ISDAS)
 	cr := &CertificateRenewer{
-		RenewBeforeHours: renewBeforeHours,
-		ConfigDir:        configDir,
-		ISDAS:            ISDAS,
+		RenewBeforeHours:           renewBeforeHours,
+		ConfigDir:                  configDir,
+		ISDAS:                      ISDAS,
+		listFilesByPrefixAndSuffix: fileops.ListFilesByPrefixAndSuffix,
 	}
 
 	return cr
@@ -42,7 +45,7 @@ func (cr *CertificateRenewer) LoadCertificateFiles() error {
 	certDir := filepath.Join(cr.ConfigDir, "crypto", "as")
 	cr.KeyPath = filepath.Join(certDir, "cp-as.key")
 
-	certFiles, err := fileops.ListFilesByPrefixAndSuffix(certDir, "ISD", ".pem")
+	certFiles, err := cr.listFilesByPrefixAndSuffix(certDir, "ISD", ".pem")
 	if err != nil {
 		return err
 	}
@@ -55,16 +58,28 @@ func (cr *CertificateRenewer) LoadCertificateFiles() error {
 	isd := strings.Split(cr.ISDAS, "-")[0]
 
 	trcDir := filepath.Join(cr.ConfigDir, "certs")
-	trcFiles, err := fileops.ListFilesByPrefixAndSuffix(trcDir, "ISD"+isd, ".trc")
+	trcFiles, err := cr.listFilesByPrefixAndSuffix(trcDir, "ISD"+isd, ".trc")
 	if err != nil {
 		return err
 	}
 	if len(trcFiles) == 0 {
 		return fmt.Errorf("No TRC files found in %s", trcDir)
 	}
-	sort.Strings(trcFiles)
+	sort.Slice(trcFiles, func(i, j int) bool {
+		filenameI := filepath.Base(trcFiles[i])
+		filenameJ := filepath.Base(trcFiles[j])
 
-	cr.TRC = trcFiles[len(trcFiles)-1]
+		var bI, sI, bJ, sJ, isdI, isdJ int
+		fmt.Sscanf(filenameI, "ISD%d-B%d-S%d.trc", &isdI, &bI, &sI)
+		fmt.Sscanf(filenameJ, "ISD%d-B%d-S%d.trc", &isdJ, &bJ, &sJ)
+
+		if bI != bJ {
+			return bI < bJ
+		}
+		return sI < sJ
+	})
+
+	cr.TRC = trcFiles[len(trcFiles)-1] // Get the latest TRC version
 	return nil
 }
 
