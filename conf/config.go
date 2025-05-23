@@ -17,6 +17,11 @@ type Config struct {
 	ServiceConfig ServiceConfig             `toml:"service_config,omitempty"`
 	Api           Api                       `toml:"api,omitempty"`
 	Pila          scionpila.SCIONPilaConfig `toml:"pila,omitempty"`
+	UI            UI                        `toml:"ui,omitempty"`
+}
+
+type UI struct {
+	Server string
 }
 
 type Api struct {
@@ -70,6 +75,9 @@ func NewConfig() *Config {
 		},
 		ServiceConfig: ServiceConfig{},
 		Pila:          scionpila.SCIONPilaConfig{},
+		UI: UI{
+			Server: "127.0.0.1:8180",
+		},
 	}
 }
 
@@ -89,4 +97,18 @@ func LoadConfig(path string) (*Config, error) {
 	// log.Println(c)
 
 	return c, nil
+}
+
+func (c *Config) Save(path string) error {
+	content, err := toml.Marshal(c)
+	if err != nil {
+		return err
+	}
+
+	err = os.WriteFile(path, content, 0644)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

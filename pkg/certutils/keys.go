@@ -62,6 +62,12 @@ func EnsureASPrivateKeyExists(configDir, isdAs string) error {
 
 	if _, err := os.Stat(keyPath); os.IsNotExist(err) {
 		log.Println("[Crypto] AS private key does not exist. Generating a new ECDSA key with p-256 ...")
+
+		basePath := filepath.Join(configDir, "crypto", "as")
+		if err := os.MkdirAll(basePath, 0700); err != nil {
+			return fmt.Errorf("creating directory for AS private key: %w", err)
+		}
+
 		// Generate a new AS private key
 		/*key, err := GenerateEcdsaPrivateKey("p256")
 		if err != nil {

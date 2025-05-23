@@ -43,6 +43,26 @@ func GetBorderRouters() []*SystemService {
 	return services
 }
 
+func GetStandaloneControlServices() []*StandaloneService {
+	services := make([]*StandaloneService, 0)
+	for _, service := range StandaloneServices {
+		if strings.Contains(service.BinaryPath, "control") {
+			services = append(services, service)
+		}
+	}
+	return services
+}
+
+func GetStandaloneBorderRouters() []*StandaloneService {
+	services := make([]*StandaloneService, 0)
+	for _, service := range StandaloneServices {
+		if strings.Contains(service.BinaryPath, "router") {
+			services = append(services, service)
+		}
+	}
+	return services
+}
+
 type ServiceHealthCheck struct {
 }
 
@@ -75,12 +95,14 @@ func UpdateHealthCheck() bool {
 				met := metrics.ServiceStatus{
 					Status:  metrics.SERVICE_STATUS_ERROR,
 					Message: "Service not running",
+					Id:      service.Name,
 				}
 				metrics.Status.ControlServices[service.Name] = met
 				allServicesRunning = false
 			} else {
 				met := metrics.ServiceStatus{
 					Status: metrics.SERVICE_STATUS_RUNNING,
+					Id:     service.Name,
 				}
 				metrics.Status.ControlServices[service.Name] = met
 			}
@@ -89,12 +111,14 @@ func UpdateHealthCheck() bool {
 				met := metrics.ServiceStatus{
 					Status:  metrics.SERVICE_STATUS_ERROR,
 					Message: "Service not running",
+					Id:      service.Name,
 				}
 				metrics.Status.BorderRouters[service.Name] = met
 				allServicesRunning = false
 			} else {
 				met := metrics.ServiceStatus{
 					Status: metrics.SERVICE_STATUS_RUNNING,
+					Id:     service.Name,
 				}
 				metrics.Status.BorderRouters[service.Name] = met
 			}
@@ -103,12 +127,14 @@ func UpdateHealthCheck() bool {
 				met := metrics.ServiceStatus{
 					Status:  metrics.SERVICE_STATUS_ERROR,
 					Message: "Service not running",
+					Id:      "scion-dispatcher",
 				}
 				metrics.Status.Dispatcher = met
 				allServicesRunning = false
 			} else {
 				met := metrics.ServiceStatus{
 					Status: metrics.SERVICE_STATUS_RUNNING,
+					Id:     "scion-dispatcher",
 				}
 				metrics.Status.Dispatcher = met
 			}
@@ -117,12 +143,14 @@ func UpdateHealthCheck() bool {
 				met := metrics.ServiceStatus{
 					Status:  metrics.SERVICE_STATUS_ERROR,
 					Message: "Service not running",
+					Id:      "scion-daemon",
 				}
 				metrics.Status.Daemon = met
 				allServicesRunning = false
 			} else {
 				met := metrics.ServiceStatus{
 					Status: metrics.SERVICE_STATUS_RUNNING,
+					Id:     "scion-daemon",
 				}
 				metrics.Status.Daemon = met
 			}
@@ -131,12 +159,14 @@ func UpdateHealthCheck() bool {
 				met := metrics.ServiceStatus{
 					Status:  metrics.SERVICE_STATUS_ERROR,
 					Message: "Service not running",
+					Id:      "scion-orchestrator",
 				}
 				metrics.Status.BootstrapServer = met
 				allServicesRunning = false
 			} else {
 				met := metrics.ServiceStatus{
 					Status: metrics.SERVICE_STATUS_RUNNING,
+					Id:     "scion-orchestrator",
 				}
 				metrics.Status.BootstrapServer = met
 			}
@@ -144,6 +174,14 @@ func UpdateHealthCheck() bool {
 
 	}
 	return allServicesRunning
+}
+
+func GetServiceList() []SystemService {
+	services := make([]SystemService, 0)
+	for _, service := range Services {
+		services = append(services, *service)
+	}
+	return services
 }
 
 func LoadServices(env *HostEnvironment, config *conf.SCIONConfig, asConfig *conf.Config) error {
@@ -345,7 +383,7 @@ func (s *SystemService) Start() error {
 	return nil
 }
 
-func (s *SystemService) ReStart() error {
+func (s *SystemService) Restart() error {
 	switch runtime.GOOS {
 	case "linux":
 

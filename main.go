@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"os/signal"
@@ -13,6 +14,7 @@ import (
 
 	"golang.org/x/sync/errgroup"
 
+	"github.com/gin-gonic/gin"
 	"github.com/jessevdk/go-flags"
 	"github.com/netsys-lab/scion-orchestrator/conf"
 	"github.com/netsys-lab/scion-orchestrator/environment"
@@ -22,6 +24,7 @@ import (
 	"github.com/netsys-lab/scion-orchestrator/pkg/fileops"
 	"github.com/netsys-lab/scion-orchestrator/pkg/metrics"
 	"github.com/netsys-lab/scion-orchestrator/pkg/scionca"
+	"github.com/netsys-lab/scion-orchestrator/ui"
 	scionpila "github.com/netsys-lab/scion-pila"
 )
 
@@ -45,9 +48,16 @@ var install bool
 var run bool
 var shutdown bool
 var restart bool
+var installWizard bool
 
 func main() {
 
+	// Check that its just running as standalone without args -> installWizard
+	if len(os.Args) == 1 {
+		log.Println("[Main] Running as standalone without args")
+		log.Println("[Main] Running install wizard")
+		installWizard = true
+	}
 	args, err := flags.Parse(&opts)
 	if err != nil {
 		log.Println(err)
@@ -64,6 +74,9 @@ func main() {
 	}
 
 	config, err := conf.LoadConfig(configPath)
+	if err != nil {
+		log.Fatal("[Main] failed to load config ", config)
+	}
 	log.Println("[Main] scion-orchestrator config loaded successfully")
 
 	if fileops.FileOrFolderExists("config") {
@@ -98,8 +111,37 @@ func main() {
 	// catch SIGETRM or SIGINTERRUPT
 	signal.Notify(cancelChan, syscall.SIGTERM, syscall.SIGINT)
 
-	metrics.Status.Mode = config.Mode
+	metrics.Init()
 
+	if run {
+		metrics.Status.ServiceMode = "standalone"
+	} else {
+		metrics.Status.ServiceMode = "service"
+	}
+
+	if installWizard {
+		env.ChangeToStandalone()
+		log.Println("[Main] Starting API server...")
+
+		go func() {
+			sig := <-cancelChan
+			log.Printf("[Signal] Caught signal %v", sig)
+			environment.KillAllChilds()
+			log.Fatal("[Main] Shutting down...")
+		}()
+
+		go func() {
+			time.Sleep(2 * time.Second)
+			log.Println("[Main] UI and API running! Please open https://localhost:8843 in your browser if you're running this locally.")
+			log.Println("[Main] If you're running this on a remote server, please enable ssh port forwarding via ssh -L 8843:localhost:8843 user@remote-server.")
+			log.Println("[Main] Note: This process will be stopped after the installation finished successfully.")
+		}()
+
+		err := runUIApi(env, config, scionConfig)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
 	if opts.Config != "" { // Run as a service
 		log.Println("[Main] Running as service")
 
@@ -117,14 +159,10 @@ func main() {
 			log.Fatal(err)
 		}
 
+		// log.Fatal(environment.Services)
+
 		go func() {
-			err = runBackgroundServices(env, config)
-			if err != nil {
-				log.Fatal(err)
-			}
-		}()
-		go func() {
-			err = runService(env, config)
+			err = runBackgroundServices(env, config, scionConfig)
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -139,7 +177,7 @@ func main() {
 	} else if run {
 		log.Println("[Main] Running in standalone mode")
 		go func() {
-			err = runBackgroundServices(env, config)
+			err = runBackgroundServices(env, config, scionConfig)
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -216,18 +254,34 @@ func runRestart(env *environment.HostEnvironment, config *conf.SCIONConfig, asCo
 	return nil
 }
 
-func runBackgroundServices(env *environment.HostEnvironment, config *conf.Config) error {
+func runBackgroundServices(env *environment.HostEnvironment, config *conf.Config, scionConfig *conf.SCIONConfig) error {
 	log.Println("[Main] Running background services")
 	var eg errgroup.Group
 
-	if config.Mode == "endhost" {
-		eg.Go(func() error {
-			return metrics.RunStatusHTTPServer(config.Metrics.Server)
-		})
+	eg.Go(func() error {
+		return metrics.RunStatusHTTPServer(config.Metrics.Server)
+	})
 
+	eg.Go(func() error {
+		return metrics.RunPrometheusHTTPServer(config.Metrics.Prometheus)
+	})
+
+	if len(config.Api.Users) == 0 {
+		log.Println("[Main] Warning: No users defined for HTTP access, API and UI can not be accessed")
+	} else {
+		log.Println("[Main] Starting API server...")
 		eg.Go(func() error {
-			return metrics.RunPrometheusHTTPServer(config.Metrics.Prometheus)
+			// We want to fail here if the API server fails because that can be the case if the installer is still running
+			for runUIApi(env, config, scionConfig) != nil {
+				log.Println("[Main] Error starting API server, retrying...")
+				time.Sleep(1 * time.Second)
+			}
+
+			return nil
 		})
+	}
+
+	if config.Mode == "endhost" {
 
 		// Standalone does its own health check
 		if !run {
@@ -259,14 +313,6 @@ func runBackgroundServices(env *environment.HostEnvironment, config *conf.Config
 			})
 		}
 
-		eg.Go(func() error {
-			return metrics.RunStatusHTTPServer(config.Metrics.Server)
-		})
-
-		eg.Go(func() error {
-			return metrics.RunPrometheusHTTPServer(config.Metrics.Prometheus)
-		})
-
 		log.Println("[Main] Running background services for CA")
 
 		// TODO: Check which services do really need a control plane cert/key
@@ -278,17 +324,8 @@ func runBackgroundServices(env *environment.HostEnvironment, config *conf.Config
 			}
 		}
 
-		if len(config.Api.Users) == 0 {
-			log.Println("[Main] Warning: No users defined for API, endpoints can not be accessed")
-		} else {
-			log.Println("[Main] Starting API server...")
-			eg.Go(func() error {
-				return apiv1.RunApiServer(env, config)
-			})
-		}
-
 		// log.Println(config.Ca.Clients)
-		if config.Ca.Clients != nil && len(config.Ca.Clients) > 0 {
+		if len(config.Ca.Clients) > 0 {
 			eg.Go(func() error {
 				// TODO: Only run if core AS
 				parts := strings.Split(config.IsdAs, "-")
@@ -331,9 +368,48 @@ func runBackgroundServices(env *environment.HostEnvironment, config *conf.Config
 	return eg.Wait()
 }
 
-func runService(env *environment.HostEnvironment, config *conf.Config) error {
-	//log.Println("[Main] Running service")
-	//time.Sleep(30 * time.Second)
+func runUIApi(env *environment.HostEnvironment, config *conf.Config, scionConfig *conf.SCIONConfig) error {
+	r := gin.Default()
+	// Start Gin server with the newly generated leaf certificate
+	// TODO: locate this file properly
+	f, _ := os.Create(filepath.Join(env.LogPath, "gin.log"))
+	gin.DefaultWriter = io.MultiWriter(f)
+
+	// })
+
+	// eg.Go(func() error {
+	err := apiv1.RegisterRoutes(env, config, r, installWizard, scionConfig)
+	if err != nil {
+		log.Println("[Main] Error registering API routes: ", err)
+		return err
+	}
+	// })
+
+	// eg.Go(func() error {
+	err = ui.RegisterRoutes(env, config, r, installWizard, scionConfig)
+	if err != nil {
+		log.Println("[Main] Error registering UI routes: ", err)
+		return err
+	}
+
+	apiAddress := ":8443"
+	if config.Api.Address != "" {
+		apiAddress = config.Api.Address
+	}
+
+	log.Println("[Main] Starting API und UI server with TLS on", apiAddress)
+	certFile, keyFile, err := apiv1.SetupCertificates(env)
+	if err != nil {
+		log.Println("[Main] Error creating TLS Certificates of API and UI: ", err)
+		return err
+	}
+
+	// Start the server with the new certificate and private key
+	err = r.RunTLS(apiAddress, certFile, keyFile)
+	if err != nil {
+		log.Println("[Main] Failed to start TLS API/UI server: ", err)
+		return err
+	}
 
 	return nil
 }

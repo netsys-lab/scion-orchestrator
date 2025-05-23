@@ -146,8 +146,10 @@ func runStandaloneRouter(env environment.HostEnvironment, service conf.SCIONServ
 		Name:       service.Name,
 		BinaryPath: filepath.Join("bin", "router"),
 		ConfigPath: tmpRouterFile,
-		Logfile:    filepath.Join("config", "logs", fmt.Sprintf("br-%d.log", service.Index)),
+		Logfile:    filepath.Join("config", "logs", fmt.Sprintf("scion-border-router-br%d.log", service.Index)),
 	}
+
+	environment.StandaloneServices[service.Name] = &router
 
 	return router.Run()
 }
@@ -178,8 +180,10 @@ func runStandaloneControlService(env environment.HostEnvironment, service conf.S
 		Name:       service.Name,
 		BinaryPath: filepath.Join("bin", "control"),
 		ConfigPath: tmpControlFile,
-		Logfile:    filepath.Join("config", "logs", fmt.Sprintf("cs-%d.log", service.Index)),
+		Logfile:    filepath.Join("config", "logs", fmt.Sprintf("scion-control-service-cs%d.log", service.Index)),
 	}
+
+	environment.StandaloneServices[service.Name] = &control
 
 	return control.Run()
 }
@@ -213,6 +217,8 @@ func runStandaloneDaemon(env environment.HostEnvironment, service conf.SCIONServ
 		Logfile:    filepath.Join("config", "logs", "sciond.log"),
 	}
 
+	environment.StandaloneServices[service.Name] = &daemon
+
 	return daemon.Run()
 }
 
@@ -234,6 +240,8 @@ func runStandaloneDispatcher(env environment.HostEnvironment, service conf.SCION
 		ConfigPath: tmpDispatcherFile,
 		Logfile:    filepath.Join("config", "logs", "dispatcher.log"),
 	}
+
+	environment.StandaloneServices[service.Name] = &dispatcher
 
 	return dispatcher.Run()
 

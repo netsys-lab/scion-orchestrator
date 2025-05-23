@@ -29,11 +29,11 @@ func GetLatestTRCForISD(configDir, isd string) (string, error) {
 	sort.Strings(trcFiles)
 
 	if err != nil {
-		return "", fmt.Errorf("Failed to list TRC files: %v\n", err)
+		return "", fmt.Errorf("failed to list TRC files: %s", err.Error())
 	}
 
 	if len(trcFiles) == 0 {
-		return "", fmt.Errorf("No TRC files found for ISD %s", isd)
+		return "", fmt.Errorf("no TRC files found for ISD %s", isd)
 	}
 
 	trcFile := trcFiles[len(trcFiles)-1]

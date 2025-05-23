@@ -17,6 +17,20 @@ import (
 	"github.com/netsys-lab/scion-orchestrator/pkg/scionutils"
 )
 
+func GetCertificateChainsHandler(eng *gin.RouterGroup, isdAS string, configDir string) {
+
+	eng.GET("cppki/certs", func(c *gin.Context) {
+		certs, err := certutils.GetASCertificateDetails(configDir, isdAS)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not get the certificate chain"})
+			return
+		}
+
+		c.JSON(http.StatusOK, certs)
+	})
+
+}
+
 func GenerateCSRFromTemplateHandler(eng *gin.RouterGroup, isdAS string, configDir string) {
 
 	eng.POST("cppki/csr", func(c *gin.Context) {
